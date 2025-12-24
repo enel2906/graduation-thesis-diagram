@@ -1,83 +1,43 @@
-@startuml
+@startuml Authentication Use Case
 skinparam backgroundColor white
 skinparam actorStyle awesome
+skinparam packageStyle rectangle
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
-
 skinparam usecaseBackgroundColor #E8F4FD
 skinparam usecaseBorderColor #2196F3
-skinparam RectangleBorderColor #888888
-skinparam RectangleBackgroundColor #FFFFFF
-skinparam ArrowColor #333333
 
-title Stock Pattern Detection System - General Use Case
+title Authentication Module - Detailed Use Case
+
 left to right direction
 
-' ===== Color actors by stereotype (reliable) =====
-actor "Guest" as Guest <<GUEST>>
-actor "User"  as AuthUser <<USER>>
-actor "Admin" as Admin <<ADMIN>>
+actor "User" as User #LightBlue
+actor "Google OAuth" as Google #LightCoral
 
-skinparam actor<<GUEST>> {
-  BackgroundColor #C8F7C5
-  BorderColor #2E7D32
-  FontColor #1B5E20
-}
-skinparam actor<<USER>> {
-  BackgroundColor #BBDEFB
-  BorderColor #1565C0
-  FontColor #0D47A1
-}
-skinparam actor<<ADMIN>> {
-  BackgroundColor #FFE0B2
-  BorderColor #EF6C00
-  FontColor #E65100
+rectangle "Authentication System" {
+    usecase "Register with Email" as UC1
+    usecase "Login with Credentials" as UC2
+    usecase "Login with Google OAuth" as UC3
+    usecase "Logout" as UC4
+    usecase "Validate JWT Token" as UC5
+    usecase "Refresh Access Token" as UC6
+    
+    UC2 ..> UC5 : <<include>>
+    UC3 ..> UC5 : <<include>>
+    UC5 ..> UC6 : <<extend>>
 }
 
-rectangle "Stock Pattern Detection System" {
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
 
-  rectangle "Authenticated Features" #F3FAFF {
-    usecase "View Price Board" as UC8
-    usecase "View Company News" as UC9
-    usecase "View Financials" as UC10
-    usecase "Realtime Updates" as UC11
-    usecase "Advanced Signals" as UC13
-  }
+Google <-- UC3 : OAuth2 Flow
 
-  rectangle "Public Features" #FFFFFF {
-    usecase "View Stock Charts" as UC1
-    usecase "Search Stocks" as UC2
-    usecase "Detect Patterns" as UC3
-    usecase "View Indicators" as UC5
-    usecase "Register / Login" as UC6
-  }
-
-  rectangle "Admin Features" #FFF7ED {
-    usecase "Manage Stocks" as UC12
-  }
-}
-
-' --- Associations ---
-Guest --> UC1
-Guest --> UC2
-Guest --> UC3
-Guest --> UC5
-Guest --> UC6
-
-AuthUser --> UC8
-AuthUser --> UC9
-AuthUser --> UC10
-AuthUser --> UC11
-AuthUser --> UC13
-
-Admin --> UC12
-
-' --- Correct actor generalization ---
-Guest <|-- AuthUser
-AuthUser <|-- Admin
-
-' --- Force vertical ordering: Guest -> User -> Admin (Admin below) ---
-Guest -[hidden]-> AuthUser
-AuthUser -[hidden]-> Admin
+note right of UC5
+  JWT tokens include:
+  - Access Token (30min)
+  - Refresh Token (7 days)
+end note
 
 @enduml
