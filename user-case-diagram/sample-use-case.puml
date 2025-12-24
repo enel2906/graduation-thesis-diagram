@@ -1,0 +1,74 @@
+@startuml
+' =========================
+' Use Case Diagram - Light Theme
+' =========================
+left to right direction
+skinparam shadowing true
+skinparam roundCorner 20
+skinparam dpi 120
+
+' --- Global ---
+skinparam backgroundColor #f8fafc
+skinparam defaultFontName "Segoe UI"
+
+' --- Actor style ---
+skinparam Actor {
+  BackgroundColor #fde68a
+  BorderColor #f59e0b
+  FontColor #78350f
+}
+
+' --- Use case style ---
+skinparam UseCase {
+  BackgroundColor #dbeafe
+  BorderColor #3b82f6
+  FontColor #1e3a8a
+}
+
+' --- System / Package ---
+skinparam Package {
+  BackgroundColor #ecfeff
+  BorderColor #06b6d4
+  FontColor #164e63
+}
+
+skinparam ArrowColor #475569
+skinparam ArrowThickness 2
+
+actor "Khách hàng" as Customer
+actor "Quản trị viên" as Admin
+
+rectangle "Hệ thống Bán Hàng" as System #e0f2fe {
+  (Đăng ký) as UC_Register
+  (Đăng nhập) as UC_Login
+  (Xem sản phẩm) as UC_Browse
+  (Thêm vào giỏ) as UC_AddCart
+  (Thanh toán) as UC_Checkout
+
+  package "Thanh toán" #cffafe {
+    (Chọn phương thức) as UC_PaymentMethod
+    (Xác nhận đơn hàng) as UC_ConfirmOrder
+  }
+
+  (Quản lý sản phẩm) as UC_ManageProducts
+  (Xem báo cáo) as UC_Reports
+}
+
+' --- Relationships ---
+Customer --> UC_Register
+Customer --> UC_Login
+Customer --> UC_Browse
+Customer --> UC_AddCart
+Customer --> UC_Checkout
+
+UC_Checkout .> UC_PaymentMethod : <<include>>
+UC_Checkout .> UC_ConfirmOrder  : <<include>>
+
+Admin --> UC_ManageProducts
+Admin --> UC_Reports
+
+' Highlight include relations
+UC_Checkout -[#22c55e,thickness=3].> UC_PaymentMethod : <<include>>
+UC_Checkout -[#22c55e,thickness=3].> UC_ConfirmOrder  : <<include>>
+
+@enduml
