@@ -1,0 +1,50 @@
+@startuml Stock Data Management Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Stock Data Module - Detailed Use Case
+
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Admin" as Admin #Orange
+actor "VNStock API" as VNStock #LightGreen
+actor "yFinance API" as YFinance #LightCoral
+
+rectangle "Stock Data Management" {
+    usecase "View Stock List" as UC1
+    usecase "Search Stock by Symbol" as UC2
+    usecase "View Candlestick Chart" as UC3
+    usecase "View Price Board" as UC4
+    usecase "Add New Stock" as UC5
+    usecase "Remove Stock" as UC6
+    usecase "Sync Historical Data" as UC7
+    usecase "Receive Real-time Updates" as UC8
+    
+    UC5 ..> UC7 : <<include>>
+    UC3 ..> UC8 : <<extend>>
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC8
+
+Admin --> UC5
+Admin --> UC6
+
+VNStock <-- UC7 : Fetch VN Stocks
+YFinance <-- UC7 : Fetch US Stocks
+
+note bottom of UC7
+  Markets: HOSE, HNX, 
+  UPCOM, US Market
+end note
+
+@enduml

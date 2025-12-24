@@ -1,0 +1,57 @@
+@startuml General Use Case Diagram
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Stock Pattern Detection System - General Use Case
+
+left to right direction
+
+actor "Guest" as Guest #LightGreen
+actor "User" as AuthUser #LightBlue
+actor "Admin" as Admin #Orange
+
+rectangle "Stock Pattern Detection System" {
+    rectangle "Admin Features" #FFF3E0 {
+        usecase "Manage Users" as UC12
+        usecase "Manage Stocks" as UC11
+    }
+
+    rectangle "Public Features" #FAFAFA {
+        usecase "View Stock Charts" as UC1
+        usecase "Search Stocks" as UC2
+        usecase "View Price Board" as UC3
+        usecase "View Company News" as UC4
+        usecase "View Financials" as UC5
+        usecase "Register/Login" as UC6
+    }
+    
+    rectangle "Authenticated Features" #E3F2FD {
+        usecase "Detect Patterns" as UC7
+        usecase "View Indicators" as UC8
+        usecase "Advance Signals" as UC9
+    }
+
+}
+
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+
+AuthUser --> UC7
+AuthUser --> UC8
+AuthUser --> UC9
+
+Admin --> UC11
+Admin --> UC12
+
+Guest <|-- AuthUser : extends
+AuthUser <|-- Admin : extends
+
+@enduml

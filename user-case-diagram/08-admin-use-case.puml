@@ -1,0 +1,45 @@
+@startuml Admin Module Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Admin Module - Detailed Use Case
+
+left to right direction
+
+actor "Admin" as Admin #Orange
+actor "MongoDB" as MongoDB #LightGreen
+actor "VNStock" as VNStock #Yellow
+
+rectangle "Stock Management" {
+    usecase "View All Stocks" as UC1
+    usecase "Add VN Stock" as UC2
+    usecase "Add US Stock" as UC3
+    usecase "Remove Stock" as UC4
+    usecase "Sync Stock Data" as UC5
+    usecase "Force Data Reset" as UC6
+    
+    UC2 ..> UC5 : <<include>>
+    UC3 ..> UC5 : <<include>>
+}
+
+rectangle "System Management" {
+    usecase "View System Status" as UC10
+    usecase "View Database Stats" as UC11
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC6
+Admin --> UC10
+
+MongoDB <-- UC1
+MongoDB <-- UC5
+VNStock <-- UC5
+
+@enduml

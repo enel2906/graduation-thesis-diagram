@@ -1,0 +1,47 @@
+@startuml Company Information Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Company Information Module - Detailed Use Case
+
+left to right direction
+
+actor "Authenticated User" as User #LightBlue
+actor "VNStock API" as VNStock #LightGreen
+
+rectangle "Company News" as CN {
+    usecase "View Company News" as UC1
+    usecase "Open News Article" as UC2
+    usecase "Filter by Date" as UC3
+    
+    UC1 ..> UC2 : <<extend>>
+    UC1 ..> UC3 : <<extend>>
+}
+
+rectangle "Financial Reports" as FR {
+    usecase "View Financial Reports" as UC4
+    usecase "View Balance Sheet" as UC5
+    usecase "View Income Statement" as UC6
+    usecase "View Cash Flow" as UC7
+    usecase "View Financial Ratios" as UC8
+    usecase "Toggle Period\n(Yearly/Quarterly)" as UC9
+    
+    UC4 ..> UC5 : <<extend>>
+    UC4 ..> UC6 : <<extend>>
+    UC4 ..> UC7 : <<extend>>
+    UC4 ..> UC8 : <<extend>>
+    UC4 ..> UC9 : <<extend>>
+}
+
+User --> UC1
+User --> UC4
+
+VNStock <-- UC1 : Fetch News
+VNStock <-- UC4 : Fetch Reports
+
+@enduml

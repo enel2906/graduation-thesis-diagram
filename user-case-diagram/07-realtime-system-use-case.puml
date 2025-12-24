@@ -1,0 +1,48 @@
+@startuml Real-time System Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Real-time Data Pipeline - Use Case
+
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Data Service\n(Python)" as DataService #LightGreen
+actor "RabbitMQ" as RabbitMQ #Orange
+actor "Alert Service\n(Java)" as AlertService #LightCoral
+
+rectangle "Real-time Data System" {
+    usecase "Fetch Latest Stock Data" as UC1
+    usecase "Publish Stock Updates" as UC2
+    usecase "Consume MQ Messages" as UC3
+    usecase "Push WebSocket Updates" as UC4
+    usecase "Subscribe to Stock Channel" as UC5
+    usecase "Receive Live Updates" as UC6
+    usecase "Update Chart Real-time" as UC7
+    
+    UC1 ..> UC2 : <<include>>
+    UC3 ..> UC4 : <<include>>
+    UC5 ..> UC6 : <<include>>
+    UC6 ..> UC7 : <<include>>
+}
+
+DataService --> UC1
+DataService --> UC2
+RabbitMQ <-- UC2
+RabbitMQ --> UC3
+AlertService --> UC3
+AlertService --> UC4
+User --> UC5
+User --> UC7
+
+note bottom of UC2
+  Routing: stock.update.{symbol}
+  Interval: 15 minutes
+end note
+
+@enduml

@@ -1,0 +1,56 @@
+@startuml Pattern Detection Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Pattern Detection Module - Detailed Use Case
+
+left to right direction
+
+actor "User" as User #LightBlue
+
+rectangle "Simple Pattern Detection" as SPD {
+    usecase "Select Patterns" as UC1
+    usecase "Detect Single Candle\n(11 types)" as UC2
+    usecase "Detect Two Candle\n(15 types)" as UC3
+    usecase "Detect Three Candle\n(19 types)" as UC4
+    usecase "Detect Multi-Candle\n(5 types)" as UC5
+    usecase "View Pattern Markers" as UC6
+    
+    UC1 ..> UC2 : <<extend>>
+    UC1 ..> UC3 : <<extend>>
+    UC1 ..> UC4 : <<extend>>
+    UC1 ..> UC5 : <<extend>>
+    UC6 <.. UC2 : <<include>>
+    UC6 <.. UC3 : <<include>>
+    UC6 <.. UC4 : <<include>>
+    UC6 <.. UC5 : <<include>>
+}
+
+rectangle "Complex Pattern Detection" as CPD {
+    usecase "Detect Cup With Handle" as UC7
+    usecase "Detect Flag/Pennant" as UC8
+    usecase "Detect Double Top/Bottom" as UC9
+    usecase "Detect Head & Shoulders" as UC10
+    usecase "Detect Triangle Patterns" as UC11
+    usecase "View Pattern Lines" as UC12
+    
+    UC7 ..> UC12 : <<include>>
+    UC8 ..> UC12 : <<include>>
+    UC9 ..> UC12 : <<include>>
+    UC10 ..> UC12 : <<include>>
+    UC11 ..> UC12 : <<include>>
+}
+
+User --> UC1
+User --> UC7
+User --> UC8
+User --> UC9
+User --> UC10
+User --> UC11
+
+@enduml

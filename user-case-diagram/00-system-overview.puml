@@ -1,0 +1,54 @@
+@startuml System Overview Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Stock Pattern Detection System - Overview
+
+top to bottom direction
+
+actor "Guest" as Guest #LightGreen
+actor "User" as User #LightBlue
+actor "Admin" as Admin #Orange
+actor "Google" as Google #Pink
+actor "VNStock" as VNStock #Yellow
+actor "yFinance" as YFinance #Cyan
+
+rectangle "Stock Pattern Detection System" {
+    usecase "Register/Login" as UC_Auth
+    usecase "View Charts" as UC_Chart
+    usecase "Search Stocks" as UC_Search
+    usecase "Detect Patterns (50+)" as UC_Pattern
+    usecase "View Indicators" as UC_Ind
+    usecase "Advance Signals" as UC_Signal
+    usecase "View News" as UC_News
+    usecase "View Financials" as UC_Fin
+    usecase "View Price Board" as UC_Price
+    usecase "Real-time Updates" as UC_RT
+    usecase "Manage Stocks" as UC_Admin
+}
+
+Guest --> UC_Auth
+Guest --> UC_Chart
+Guest --> UC_Search
+Guest --> UC_Pattern
+Guest --> UC_Ind
+
+User --> UC_Price
+User --> UC_News
+User --> UC_Fin
+User --> UC_RT
+User --> UC_Signal
+
+Admin --> UC_Admin
+Guest --|> User
+User --|> Admin
+
+Google <-- UC_Auth
+VNStock <-- UC_Chart
+YFinance <-- UC_Chart
+
+@enduml

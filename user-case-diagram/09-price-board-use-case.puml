@@ -1,0 +1,34 @@
+@startuml Price Board Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #E8F4FD
+skinparam usecaseBorderColor #2196F3
+
+title Price Board Module - Detailed Use Case
+
+left to right direction
+
+actor "User" as User #LightBlue
+actor "VNStock API" as VNStock #LightGreen
+
+rectangle "Price Board" {
+    usecase "View Price Board" as UC1
+    usecase "View Real-time Prices" as UC2
+    usecase "View Price Changes" as UC3
+    usecase "View Volume Data" as UC4
+    usecase "Navigate to Stock" as UC5
+    usecase "Filter by Market" as UC6
+    
+    UC1 ..> UC2 : <<include>>
+    UC1 ..> UC3 : <<include>>
+    UC1 ..> UC4 : <<include>>
+    UC1 ..> UC5 : <<extend>>
+    UC1 ..> UC6 : <<extend>>
+}
+
+User --> UC1
+VNStock <-- UC2 : Fetch Data
+
+@enduml
