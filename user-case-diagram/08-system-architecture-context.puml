@@ -1,0 +1,255 @@
+@startuml
+!theme plain
+title System Architecture Overview
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Admin" as Admin #Orange
+actor "VnStock API" as VnStock #LightGreen
+actor "Google OAuth" as Google #Yellow
+
+database "MongoDB" as MongoDB #Pink
+queue "RabbitMQ" as RabbitMQ #Lavender
+
+rectangle "Stock Pattern System" {
+    
+    component "Frontend" #LightCyan {
+        [React Client] as React
+        [WebSocket Client] as WS
+    }
+    
+    component "Backend" #LightYellow {
+        [Java Spring Boot] as Java
+        [Python FastAPI] as Python
+    }
+    
+    component "Services" #LightSalmon {
+        [Authentication] as Auth
+        [Pattern Detection] as Pattern
+        [Stock Data] as Stock
+        [Real-time] as RT
+    }
+}
+
+' User interactions
+User --> React
+Admin --> React
+Admin --|> User
+
+' Frontend to Backend
+React --> Java : "REST API"
+WS --> RT : "WebSocket"
+
+' Backend services
+Java --> Auth
+Java --> Pattern
+Python --> Stock
+Java --> RT
+
+' Data access
+Auth --> MongoDB
+Pattern --> MongoDB
+Stock --> MongoDB
+
+' Message queue
+Stock --> RabbitMQ : "Publish"
+RabbitMQ --> RT : "Consume"
+
+' External
+Stock --> VnStock
+Auth --> Google
+
+note right of React
+  React 19 + Vite
+  Lightweight Charts
+  SockJS + STOMP
+end note
+
+note right of Java
+  Spring Boot 3.3.5
+  Java 17
+  JWT + OAuth2
+  WebSocket
+end note
+
+note left of Python
+  FastAPI
+  vnstock 3.x
+  aio-pika
+  Motor
+end note
+
+note bottom of MongoDB
+  Collections:
+  stocks, candlesticks
+  users, watchlists
+end note
+
+note bottom of RabbitMQ
+  Topic Exchange
+  stock.market.data
+  Routing: stock.update.*
+end note
+
+@enduml
+
+' User interactions
+User --> ReactApp : "Access Web UI"
+Admin --> ReactApp : "Access Admin Panel"
+
+' Frontend to Backend
+ReactApp --> JavaBackend : "REST API\n(HTTP/HTTPS)"
+ReactApp --> SockJS : "WebSocket\n(STOMP)"
+SockJS --> WSService : "Real-time\nConnection"
+
+' Backend services
+JavaBackend --> AuthService
+JavaBackend --> PatternService
+JavaBackend --> ChartService
+JavaBackend --> WSService
+
+PythonBackend --> StockService
+PythonBackend --> VnStockConn
+
+' Data access
+AuthService --> MongoRepo
+PatternService --> MongoRepo
+StockService --> MongoRepo
+MongoRepo --> MongoDB
+
+' Message queue
+StockService --> MQPublisher
+MQPublisher --> RabbitMQ
+RabbitMQ --> MQConsumer
+MQConsumer --> WSService
+
+' External API
+VnStockConn --> VnStock : "Fetch OHLC\nNews, Finance"
+AuthService --> Google : "OAuth 2.0"
+
+' Use cases per component
+package "Frontend Use Cases" {
+    usecase "Display Charts" as UC_F1
+    usecase "Manage Patterns" as UC_F2
+    usecase "View News/Reports" as UC_F3
+    usecase "Real-time Updates" as UC_F4
+}
+
+package "Authentication Use Cases" {
+    usecase "Register/Login" as UC_A1
+    usecase "OAuth Login" as UC_A2
+    usecase "Token Management" as UC_A3
+}
+
+package "Pattern Detection Use Cases" {
+    usecase "Detect Candle Patterns" as UC_P1
+    usecase "Detect Chart Patterns" as UC_P2
+    usecase "Calculate Confidence" as UC_P3
+}
+
+package "Data Management Use Cases" {
+    usecase "Fetch Stock Data" as UC_D1
+    usecase "Store Candlesticks" as UC_D2
+    usecase "Periodic Update" as UC_D3
+    usecase "Publish Updates" as UC_D4
+}
+
+package "Admin Use Cases" {
+    usecase "Manage Stocks" as UC_AD1
+    usecase "View Statistics" as UC_AD2
+    usecase "System Monitoring" as UC_AD3
+}
+
+' Link use cases to components
+ReactApp ..> UC_F1
+ReactApp ..> UC_F2
+ReactApp ..> UC_F3
+ReactApp ..> UC_F4
+
+AuthService ..> UC_A1
+AuthService ..> UC_A2
+AuthService ..> UC_A3
+
+PatternService ..> UC_P1
+ChartService ..> UC_P2
+PatternService ..> UC_P3
+
+StockService ..> UC_D1
+StockService ..> UC_D2
+StockService ..> UC_D3
+StockService ..> UC_D4
+
+JavaBackend ..> UC_AD1
+JavaBackend ..> UC_AD2
+PythonBackend ..> UC_AD3
+
+' User to use cases
+User --> UC_F1
+User --> UC_F2
+User --> UC_F3
+User --> UC_F4
+User --> UC_A1
+User --> UC_A2
+User --> UC_P1
+User --> UC_P2
+
+Admin --> UC_AD1
+Admin --> UC_AD2
+Admin --> UC_AD3
+Admin --|> User
+
+note right of ReactApp
+  **Frontend Technology:**
+  - React 19
+  - Vite 7
+  - Lightweight Charts
+  - SockJS + STOMP
+  - CSS Variables (Theming)
+end note
+
+note right of JavaBackend
+  **Backend Technology:**
+  - Spring Boot 3.3.5
+  - Java 17
+  - Spring Security + JWT
+  - Spring WebSocket
+  - Spring AMQP (RabbitMQ)
+end note
+
+note left of PythonBackend
+  **Python Technology:**
+  - FastAPI
+  - Motor (Async MongoDB)
+  - aio-pika (Async RabbitMQ)
+  - vnstock 3.x
+  - yfinance
+end note
+
+note bottom of MongoDB
+  **Database Collections:**
+  
+  stocks: Stock metadata
+  candlesticks: OHLC data
+  users: User accounts
+  watchlists: User portfolios
+  
+  **Indexes:**
+  - symbol, market
+  - timestamp
+  - composite (symbol + date)
+end note
+
+note bottom of RabbitMQ
+  **Message Queue Config:**
+  
+  Exchange: stock.market.data
+  Type: Topic
+  Routing: stock.update.*
+  Queue: stock.live.updates
+  Persistence: Durable
+  
+  **Message Format:**
+  JSON with OHLC data
+end note
+
+@enduml

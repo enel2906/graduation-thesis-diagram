@@ -1,0 +1,318 @@
+@startuml
+!theme plain
+title Stock Chart Interaction
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Chart Library" as Chart #LightGreen
+
+rectangle "Chart Interaction" {
+    
+    package "Stock Selection" #LightCyan {
+        usecase "Search Stock" as UC01
+        usecase "Select Symbol" as UC02
+        usecase "Load OHLC" as UC03
+        usecase "Initialize Chart" as UC04
+    }
+    
+    package "Pattern Selection" #LightYellow {
+        usecase "Open Indicators" as UC05
+        usecase "Browse Categories" as UC06
+        usecase "Search Pattern" as UC07
+        usecase "Multi-Select" as UC08
+        usecase "Apply Patterns" as UC09
+    }
+    
+    package "Visualization" #Lavender {
+        usecase "Render Candles" as UC10
+        usecase "Draw Markers" as UC11
+        usecase "Show Tooltips" as UC12
+        usecase "Color Coding" as UC13
+    }
+    
+    package "Navigation" #LightSalmon {
+        usecase "Zoom" as UC14
+        usecase "Pan" as UC15
+        usecase "Reset View" as UC16
+    }
+    
+    package "Time Range" #Wheat {
+        usecase "Select Period" as UC17
+        usecase "Custom Range" as UC18
+    }
+    
+    package "Theme" #MistyRose {
+        usecase "Toggle Mode" as UC19
+        usecase "Adjust Colors" as UC20
+    }
+}
+
+' Relationships
+User --> UC01
+UC01 ..> UC02 : <<include>>
+UC02 ..> UC03 : <<include>>
+UC03 ..> UC04 : <<include>>
+UC04 --> Chart
+
+User --> UC05
+UC05 ..> UC06 : <<include>>
+UC05 ..> UC07 : <<extend>>
+UC06 ..> UC08 : <<include>>
+UC08 ..> UC09 : <<include>>
+
+UC09 ..> UC10 : <<include>>
+UC10 --> Chart
+UC09 ..> UC11 : <<include>>
+UC11 --> Chart
+UC11 ..> UC12 : <<include>>
+UC11 ..> UC13 : <<include>>
+
+User --> UC14
+UC14 --> Chart
+User --> UC15
+UC15 --> Chart
+User --> UC16
+UC16 --> Chart
+
+User --> UC17
+User --> UC18
+User --> UC19
+UC19 ..> UC20 : <<include>>
+
+note right of UC01
+  Search by symbol/name
+  Filter by market
+  30+ VN + 6 US stocks
+end note
+
+note right of UC06
+  49 Candle Patterns
+  12 Chart Patterns
+  Technical Indicators
+end note
+
+note right of UC11
+  Markers: ▲ bullish, ▼ bearish
+  Green/Red colors
+  Position: above/below candle
+end note
+
+note bottom of UC17
+  Presets: 1M, 3M, 6M, 1Y, ALL
+  Custom date picker
+  Data: Up to 10 years
+end note
+
+@enduml
+
+' Stock Selection Flow
+User --> UC071
+UC071 ..> UC072 : <<include>>
+UC072 ..> UC073 : <<extend>>
+UC072 ..> UC074 : <<include>>
+UC074 ..> UC075 : <<include>>
+UC075 ..> UC076 : <<include>>
+UC076 --> TVChart
+UC076 ..> UC077 : <<include>>
+
+' Pattern Selection Flow
+User --> UC081
+UC081 ..> UC082 : <<include>>
+UC081 ..> UC083 : <<extend>>
+UC082 ..> UC084 : <<include>>
+UC084 ..> UC085 : <<include>>
+UC081 ..> UC086 : <<extend>>
+UC084 ..> UC087 : <<include>>
+UC087 ..> UC088 : <<include>>
+
+' Visualization Flow
+UC088 ..> UC091 : <<include>>
+UC091 --> TVChart
+UC088 ..> UC092 : <<include>>
+UC092 --> TVChart
+UC092 ..> UC093 : <<include>>
+UC093 --> TVChart
+UC092 ..> UC094 : <<extend>>
+UC094 --> TVChart
+UC092 ..> UC095 : <<include>>
+UC095 --> TVChart
+UC092 ..> UC096 : <<include>>
+
+' Navigation Flow
+User --> UC101
+UC101 --> TVChart
+User --> UC102
+UC102 --> TVChart
+User --> UC103
+UC103 --> TVChart
+User --> UC104
+UC104 --> TVChart
+User --> UC105
+UC105 --> TVChart
+UC106 --> TVChart
+
+' Time Range Flow
+User --> UC111
+User --> UC112
+User --> UC113
+User --> UC114
+User --> UC115
+User --> UC116
+UC111 --> TVChart
+UC112 --> TVChart
+UC113 --> TVChart
+UC114 --> TVChart
+UC115 --> TVChart
+UC116 --> TVChart
+
+' Theme Flow
+User --> UC121
+User --> UC122
+UC121 ..> UC123 : <<include>>
+UC122 ..> UC123 : <<include>>
+UC123 --> TVChart
+User --> UC124
+UC124 --> TVChart
+User --> UC125
+UC125 --> TVChart
+User --> UC126
+UC126 --> TVChart
+
+' Advanced Features
+User --> UC131
+User --> UC132
+User --> UC133
+User --> UC134
+User --> UC135
+User --> UC136
+
+' Pattern Details
+User --> UC141
+UC141 ..> UC142 : <<include>>
+UC142 ..> UC143 : <<include>>
+UC142 ..> UC144 : <<include>>
+UC142 ..> UC145 : <<include>>
+UC142 ..> UC146 : <<include>>
+
+note right of UC072
+  **Stock Search:**
+  
+  Search by:
+  - Symbol (VCB, FPT, AAPL)
+  - Company name
+  
+  Results show:
+  - Symbol
+  - Full name
+  - Market/Exchange
+  - Current price (if available)
+  
+  Support: 30+ VN + 6 US stocks
+end note
+
+note right of UC082
+  **Pattern Categories:**
+  
+  Tabs:
+  1. Candle Patterns (49)
+     - Single (11)
+     - Two Candle (15)
+     - Three Candle (18)
+     - Multi Candle (5)
+  
+  2. Chart Patterns (12)
+     - Triangles (3)
+     - H&S (2)
+     - Tops/Bottoms (2)
+     - Others (5)
+  
+  3. Technical Indicators
+     (Placeholder for future)
+end note
+
+note right of UC092
+  **Pattern Markers:**
+  
+  Visual Elements:
+  - Triangle up (▲): Bullish
+  - Triangle down (▼): Bearish
+  - Size: 8-12px
+  - Position: Below/Above candle
+  
+  Colors:
+  - Green (#26a69a): Bullish
+  - Red (#ef5350): Bearish
+  - Yellow (#ffd54f): Neutral
+  
+  Z-index: 10 (above candles)
+end note
+
+note right of UC101
+  **Zoom Controls:**
+  
+  Mouse wheel:
+  - Up: Zoom in
+  - Down: Zoom out
+  
+  Touch:
+  - Pinch: Zoom in/out
+  - Two-finger pan: Navigate
+  
+  Keyboard:
+  - +/-: Zoom
+  - Arrow keys: Pan
+  - Home: Reset
+end note
+
+note bottom of UC111
+  **Time Range Presets:**
+  
+  - 1M: Last 30 days
+  - 3M: Last 90 days
+  - 6M: Last 180 days
+  - 1Y: Last 365 days
+  - ALL: Full history
+  - CUSTOM: Date picker
+  
+  Data retention:
+  - VN stocks: Up to 10 years
+  - US stocks: Up to 10 years
+end note
+
+note bottom of UC121
+  **Theme Configuration:**
+  
+  Dark Mode:
+  - Background: #1E1E1E
+  - Grid: #2B2B2B
+  - Text: #D1D4DC
+  - Up candle: #26a69a
+  - Down candle: #ef5350
+  
+  Light Mode:
+  - Background: #FFFFFF
+  - Grid: #E0E0E0
+  - Text: #333333
+  - Up candle: #089981
+  - Down candle: #f23645
+end note
+
+note bottom of UC142
+  **Pattern Info Popup:**
+  
+  Display:
+  - Pattern name
+  - Type (Bullish/Bearish)
+  - Confidence: 85%
+  - Date: 23/12/2025
+  - Price: 92,500 VND
+  - Description
+  - Trading signal
+  
+  Actions:
+  - View details
+  - Set alert
+  - Close
+end note
+
+@enduml

@@ -1,0 +1,236 @@
+@startuml
+!theme plain
+title Stock Data Management
+left to right direction
+
+actor "Data Service" as DataService #LightGreen
+actor "VnStock API" as VnStock #Yellow
+actor "MongoDB" as MongoDB #Pink
+actor "RabbitMQ" as RabbitMQ #LightBlue
+
+rectangle "Data Management System" {
+    
+    package "Data Collection" #LightCyan {
+        usecase "Fetch VN Stocks" as UC01
+        usecase "Fetch US Stocks" as UC02
+        usecase "Parse OHLC" as UC03
+        usecase "Validate Data" as UC04
+    }
+    
+    package "Storage" #LightYellow {
+        usecase "Create Composite ID" as UC05
+        usecase "Bulk Upsert" as UC06
+        usecase "Update Indexes" as UC07
+    }
+    
+    package "Periodic Update" #Lavender {
+        usecase "Background Task" as UC08
+        usecase "Incremental Sync" as UC09
+        usecase "Loop Stocks" as UC10
+    }
+    
+    package "Publishing" #LightSalmon {
+        usecase "Format Message" as UC11
+        usecase "Publish to MQ" as UC12
+    }
+    
+    package "APIs" #Wheat {
+        usecase "GET /api/stocks" as UC13
+        usecase "GET /api/candlesticks" as UC14
+        usecase "POST /api/admin/stocks" as UC15
+        usecase "GET /api/company/news" as UC16
+        usecase "GET /api/company/financial" as UC17
+    }
+}
+
+' Relationships
+DataService --> UC01
+UC01 --> VnStock
+UC01 ..> UC03 : <<include>>
+
+DataService --> UC02
+UC02 ..> UC03 : <<include>>
+UC03 ..> UC04 : <<include>>
+
+UC04 ..> UC05 : <<include>>
+UC05 ..> UC06 : <<include>>
+UC06 --> MongoDB
+UC06 ..> UC07 : <<include>>
+
+DataService --> UC08
+UC08 ..> UC09 : <<include>>
+UC09 ..> UC10 : <<include>>
+UC10 ..> UC01 : <<include>>
+
+UC06 ..> UC11 : <<include>>
+UC11 ..> UC12 : <<include>>
+UC12 --> RabbitMQ
+
+DataService --> UC13
+DataService --> UC14
+DataService --> UC15
+DataService --> UC16
+DataService --> UC17
+UC13 --> MongoDB
+UC14 --> MongoDB
+UC15 ..> UC06 : <<include>>
+UC16 --> VnStock
+UC17 --> VnStock
+
+note right of UC01
+  VnStock API Call:
+  - Market: HOSE, HNX, UPCOM
+  - History: 10 years
+  - Columns: OHLCV + date
+end note
+
+note right of UC05
+  Composite ID:
+  {symbol}_{dateStr}
+  Example: VCB_20231123
+  Prevents duplicates
+end note
+
+note right of UC08
+  Update Interval: 15 mins
+  Auto restart on crash
+  Logging each iteration
+end note
+
+note right of UC12
+  Exchange: stock.market.data
+  Routing: stock.update.{symbol}
+  Format: JSON OHLC
+end note
+
+' Data Collection Flow (VN Stocks)
+DataService --> UC241
+UC241 --> MongoDB
+UC241 ..> UC242 : <<include>>
+UC242 ..> UC264 : <<include>>
+UC264 --> MongoDB
+UC242 ..> UC243 : <<include>>
+UC243 --> VnStock
+UC243 ..> UC244 : <<include>>
+UC244 ..> UC245 : <<include>>
+UC245 ..> UC246 : <<include>>
+
+' Data Collection Flow (US Stocks)
+DataService --> UC247
+UC247 ..> UC248 : <<include>>
+UC248 --> YFinance
+UC248 ..> UC249 : <<include>>
+UC249 ..> UC2410 : <<include>>
+
+' Storage Flow
+UC246 ..> UC251 : <<include>>
+UC251 ..> UC252 : <<include>>
+UC252 --> MongoDB
+UC252 ..> UC253 : <<include>>
+UC252 ..> UC254 : <<include>>
+UC251 ..> UC255 : <<include>>
+UC255 --> MongoDB
+
+' Periodic Update Flow
+DataService --> UC261
+UC261 ..> UC262 : <<include>>
+UC262 ..> UC263 : <<include>>
+UC263 ..> UC264 : <<include>>
+UC264 ..> UC265 : <<include>>
+UC265 ..> UC266 : <<include>>
+UC266 ..> UC241 : <<include>>
+
+' Publishing Flow
+UC252 ..> UC271 : <<include>>
+UC271 ..> UC272 : <<include>>
+UC272 --> RabbitMQ
+UC272 ..> UC273 : <<include>>
+UC273 --> RabbitMQ
+UC273 ..> UC274 : <<include>>
+
+' API Endpoints
+DataService --> UC28
+DataService --> UC29
+DataService --> UC30
+DataService --> UC31
+DataService --> UC32
+UC28 --> MongoDB
+UC29 --> MongoDB
+UC30 --> MongoDB
+UC31 ..> UC243 : <<include>>
+UC31 ..> UC252 : <<include>>
+UC32 --> MongoDB
+
+' Company Data
+DataService --> UC33
+DataService --> UC34
+UC33 --> VnStock
+UC33 ..> UC36 : <<include>>
+UC34 --> VnStock
+UC34 ..> UC35 : <<include>>
+
+note right of UC241
+  **Incremental Sync:**
+  - Query stocks từ DB (động)
+  - KHÔNG dùng hardcoded list
+  - Market: HOSE, HNX, UPCOM, US
+end note
+
+note right of UC243
+  **VnStock API Call:**
+  stock = Vnstock().stock(symbol, market)
+  df = stock.quote.history(
+    start=start_date,
+    end=end_date
+  )
+  
+  **Columns:** time, open, high, 
+  low, close, volume
+end note
+
+note right of UC251
+  **Composite ID:**
+  _id = f"{symbol}_{dateStr}"
+  Ví dụ: "VCB_20231123"
+  
+  **Upsert Strategy:**
+  - Tránh duplicate
+  - Update nếu đã tồn tại
+end note
+
+note right of UC261
+  **Background Task:**
+  - Chạy vòng lặp vô hạn
+  - UPDATE_INTERVAL = 900s (15 phút)
+  - Tự động restart nếu crash
+  - Logging mỗi iteration
+end note
+
+note right of UC273
+  **RabbitMQ Publishing:**
+  - Exchange: stock.market.data (TOPIC)
+  - Routing: stock.update.{symbol}
+  - Message: JSON OHLC data
+  - DeliveryMode: PERSISTENT
+end note
+
+note bottom of UC28
+  **GET /api/stocks:**
+  Response: [
+    {
+      _id, symbol, name,
+      market, exchange
+    }
+  ]
+end note
+
+note bottom of UC34
+  **Financial Reports:**
+  - Balance Sheet (Bảng cân đối KT)
+  - Income Statement (KQKD)
+  - Cash Flow (Lưu chuyển tiền tệ)
+  - Financial Ratios (Chỉ số TC)
+  Period: year/quarter
+end note
+
+@enduml

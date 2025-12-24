@@ -1,0 +1,273 @@
+@startuml
+!theme plain
+title Real-Time Data Pipeline
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Python Service" as Python #LightGreen
+actor "Java Service" as Java #Orange
+actor "RabbitMQ" as RabbitMQ #Pink
+
+rectangle "Real-Time Pipeline" {
+    
+    package "Publishing" #LightCyan {
+        usecase "Fetch OHLC" as UC01
+        usecase "Transform to JSON" as UC02
+        usecase "Publish to MQ" as UC03
+    }
+    
+    package "Message Broker" #LightYellow {
+        usecase "Route Messages" as UC04
+        usecase "Queue Management" as UC05
+        usecase "Persist Messages" as UC06
+    }
+    
+    package "Consumption" #Lavender {
+        usecase "Listen Queue" as UC07
+        usecase "Deserialize JSON" as UC08
+        usecase "Validate Message" as UC09
+    }
+    
+    package "WebSocket" #LightSalmon {
+        usecase "Connect WebSocket" as UC10
+        usecase "Subscribe Topic" as UC11
+        usecase "Broadcast Updates" as UC12
+        usecase "Handle Reconnect" as UC13
+    }
+    
+    package "Chart Update" #Wheat {
+        usecase "Receive Data" as UC14
+        usecase "Update Chart" as UC15
+        usecase "Recalculate Indicators" as UC16
+        usecase "Re-detect Patterns" as UC17
+    }
+    
+    package "Connection" #MistyRose {
+        usecase "Monitor Status" as UC18
+        usecase "Heartbeat" as UC19
+        usecase "Retry Logic" as UC20
+    }
+}
+
+' Relationships
+Python --> UC01
+UC01 ..> UC02 : <<include>>
+UC02 ..> UC03 : <<include>>
+UC03 --> RabbitMQ
+
+RabbitMQ --> UC04
+UC04 ..> UC05 : <<include>>
+UC05 ..> UC06 : <<include>>
+
+Java --> UC07
+UC07 --> RabbitMQ
+UC07 ..> UC08 : <<include>>
+UC08 ..> UC09 : <<include>>
+UC09 ..> UC12 : <<include>>
+
+User --> UC10
+UC10 ..> UC11 : <<include>>
+UC11 --> Java
+UC11 ..> UC14 : <<include>>
+
+UC14 ..> UC15 : <<include>>
+UC15 ..> UC16 : <<include>>
+UC16 ..> UC17 : <<include>>
+
+UC10 ..> UC18 : <<include>>
+UC18 ..> UC19 : <<include>>
+UC19 ..> UC13 : <<extend>>
+UC13 ..> UC20 : <<include>>
+
+note right of UC03
+  Exchange: stock.market.data
+  Routing: stock.update.{symbol}
+  Message: JSON OHLC
+end note
+
+note right of UC11
+  Protocol: STOMP/SockJS
+  Endpoint: ws://localhost:60/ws
+  Topic: /topic/stock-updates/{symbol}
+end note
+
+note bottom of UC19
+  Heartbeat: 4000ms
+  Auto reconnect on failure
+  Fallback to HTTP polling
+end note
+
+' Publishing Flow
+PythonService --> UC171
+UC171 ..> UC172 : <<include>>
+UC172 ..> UC173 : <<include>>
+UC173 --> RabbitMQ
+UC173 ..> UC174 : <<include>>
+UC174 --> RabbitMQ
+UC174 ..> UC175 : <<include>>
+UC175 --> RabbitMQ
+UC175 ..> UC176 : <<include>>
+
+' Broker Flow
+UC175 --> UC181
+UC181 ..> UC182 : <<include>>
+UC182 ..> UC183 : <<include>>
+UC183 ..> UC184 : <<extend>>
+UC182 ..> UC185 : <<include>>
+
+' Consumption Flow
+JavaService --> UC191
+UC191 --> RabbitMQ
+UC191 ..> UC192 : <<include>>
+UC192 ..> UC193 : <<include>>
+UC193 ..> UC194 : <<include>>
+UC194 ..> UC195 : <<include>>
+UC195 --> RabbitMQ
+
+' WebSocket Broadcasting
+UC195 --> UC201
+UC201 ..> UC202 : <<include>>
+UC202 ..> UC203 : <<include>>
+UC203 --> JavaService
+UC203 ..> UC204 : <<extend>>
+
+' WebSocket Connection
+User --> UC211
+UC211 --> ReactApp
+ReactApp --> UC212
+UC212 --> JavaService
+UC212 ..> UC213 : <<include>>
+UC213 --> JavaService
+UC213 ..> UC214 : <<include>>
+UC214 ..> UC215 : <<extend>>
+
+' Chart Update
+UC213 --> UC221
+UC221 ..> UC222 : <<include>>
+UC222 ..> UC223 : <<include>>
+UC223 ..> UC224 : <<include>>
+UC224 ..> UC225 : <<include>>
+UC225 ..> UC226 : <<include>>
+
+' Price Board
+User --> UC231
+UC231 ..> UC232 : <<include>>
+UC232 ..> UC233 : <<include>>
+UC233 ..> UC234 : <<include>>
+UC234 ..> UC235 : <<include>>
+
+' Connection Management
+UC212 ..> UC241 : <<include>>
+UC241 ..> UC242 : <<include>>
+UC242 ..> UC243 : <<extend>>
+UC243 ..> UC244 : <<include>>
+UC244 ..> UC245 : <<extend>>
+
+note right of UC175
+  **RabbitMQ Publishing:**
+  
+  Exchange: stock.market.data
+  Type: TOPIC
+  Routing: stock.update.{symbol}
+  
+  Example:
+  - stock.update.VCB
+  - stock.update.AAPL
+  
+  Message:
+  {
+    "symbol": "VCB",
+    "timestamp": 1700000000,
+    "open": 92.5,
+    "high": 93.0,
+    "low": 92.0,
+    "close": 92.8,
+    "volume": 1500000
+  }
+end note
+
+note right of UC182
+  **Routing Pattern:**
+  
+  Queue: stock.live.updates
+  Binding: stock.update.*
+  
+  Wildcard matching:
+  - * matches one word
+  - # matches zero or more words
+  
+  stock.update.* matches:
+  ✓ stock.update.VCB
+  ✓ stock.update.AAPL
+  ✗ stock.update.VCB.detail
+end note
+
+note right of UC193
+  **Java DTO:**
+  
+  @Data
+  public class StockUpdateDTO {
+    private String symbol;
+    private Long timestamp;
+    private Double open;
+    private Double high;
+    private Double low;
+    private Double close;
+    private Long volume;
+    private String dateStr;
+  }
+end note
+
+note right of UC213
+  **WebSocket Subscription:**
+  
+  Endpoint: ws://localhost:60/ws
+  Protocol: STOMP over SockJS
+  Topic: /topic/stock-updates/{symbol}
+  
+  Example:
+  client.subscribe(
+    '/topic/stock-updates/VCB',
+    callback
+  )
+end note
+
+note right of UC223
+  **Chart Update:**
+  
+  1. Parse new candle data
+  2. Append to series
+  3. Update time scale
+  4. Maintain max visible candles
+  5. Trigger re-render
+  
+  Performance:
+  - Debounce: 100ms
+  - Max updates: 10/sec
+end note
+
+note bottom of UC242
+  **Heartbeat Config:**
+  
+  Incoming: 4000ms
+  Outgoing: 4000ms
+  
+  If no message received
+  for 2x heartbeat interval,
+  consider connection dead
+  and trigger reconnect.
+end note
+
+note bottom of UC245
+  **Fallback Strategy:**
+  
+  1. Try WebSocket (preferred)
+  2. If fails 3 times → HTTP Polling
+  3. Poll interval: 5 seconds
+  4. Retry WebSocket every 60s
+  
+  Polling endpoint:
+  GET /api/candlesticks/{symbol}?latest=1
+end note
+
+@enduml

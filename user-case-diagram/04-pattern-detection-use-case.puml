@@ -1,0 +1,264 @@
+@startuml
+!theme plain
+title Pattern Detection System
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Pattern Engine" as Engine #Yellow
+
+rectangle "Pattern Detection" {
+    
+    package "Candlestick Patterns" #LightCyan {
+        usecase "Single Candle (11)" as UC01
+        usecase "Two Candle (15)" as UC02
+        usecase "Three Candle (18)" as UC03
+        usecase "Multi Candle (5)" as UC04
+    }
+    
+    package "Chart Patterns" #LightYellow {
+        usecase "Triangles" as UC05
+        usecase "Head & Shoulders" as UC06
+        usecase "Double Top/Bottom" as UC07
+        usecase "Cup with Handle" as UC08
+        usecase "Flag/Pennant" as UC09
+    }
+    
+    package "Detection Process" #Lavender {
+        usecase "Load OHLC Data" as UC10
+        usecase "Calculate Metrics" as UC11
+        usecase "Identify Patterns" as UC12
+        usecase "Score Confidence" as UC13
+    }
+    
+    package "Visualization" #LightSalmon {
+        usecase "Render Markers" as UC14
+        usecase "Draw Lines" as UC15
+        usecase "Show Tooltips" as UC16
+    }
+    
+    package "Multi-Selection" #Wheat {
+        usecase "Open Indicators Modal" as UC17
+        usecase "Search Patterns" as UC18
+        usecase "Toggle Selection" as UC19
+        usecase "Apply Changes" as UC20
+    }
+}
+
+' Relationships
+User --> UC17
+UC17 ..> UC18 : <<extend>>
+UC17 ..> UC19 : <<include>>
+UC19 ..> UC20 : <<include>>
+
+UC20 --> UC10
+UC10 ..> UC12 : <<include>>
+UC12 --> Engine
+
+UC12 ..> UC01 : <<extend>>
+UC12 ..> UC02 : <<extend>>
+UC12 ..> UC03 : <<extend>>
+UC12 ..> UC04 : <<extend>>
+UC12 ..> UC05 : <<extend>>
+UC12 ..> UC06 : <<extend>>
+UC12 ..> UC07 : <<extend>>
+UC12 ..> UC08 : <<extend>>
+UC12 ..> UC09 : <<extend>>
+
+UC12 ..> UC11 : <<include>>
+UC11 ..> UC13 : <<include>>
+UC13 ..> UC14 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC14 ..> UC16 : <<include>>
+
+note right of UC01
+  Examples:
+  Hammer, Doji, Marubozu
+  Shooting Star, Spinning Top
+  Based on body/shadow ratio
+end note
+
+note right of UC05
+  Ascending, Descending
+  Symmetrical Triangle
+  Trendline convergence
+end note
+
+note right of UC17
+  Select up to 49 patterns
+  Search by name
+  Category tabs
+  Real-time update
+end note
+
+note bottom of UC14
+  Markers: ▲ bullish, ▼ bearish
+  Colors: Green/Red
+  Tooltips: Pattern info
+end note
+
+' Candlestick Pattern Flow
+User --> UC081
+UC081 --> UC082
+UC082 --> AlertService
+AlertService --> UC083
+UC083 ..> UC084 : <<include>>
+UC083 ..> UC085 : <<include>>
+UC083 ..> UC086 : <<include>>
+UC083 ..> UC087 : <<include>>
+
+' Single Candle Detection
+UC084 ..> P1 : <<extend>>
+UC084 ..> P2 : <<extend>>
+UC084 ..> P3 : <<extend>>
+UC084 ..> P4 : <<extend>>
+UC084 ..> P5 : <<extend>>
+UC084 ..> P6 : <<extend>>
+UC084 ..> P7 : <<extend>>
+UC084 ..> P8 : <<extend>>
+UC084 ..> P9 : <<extend>>
+UC084 ..> P10 : <<extend>>
+UC084 ..> P11 : <<extend>>
+
+' Two Candle Detection
+UC085 ..> P12 : <<extend>>
+UC085 ..> P13 : <<extend>>
+UC085 ..> P14 : <<extend>>
+UC085 ..> P15 : <<extend>>
+UC085 ..> P16 : <<extend>>
+UC085 ..> P17 : <<extend>>
+UC085 ..> P18 : <<extend>>
+UC085 ..> P19 : <<extend>>
+UC085 ..> P20 : <<extend>>
+UC085 ..> P21 : <<extend>>
+
+' Three Candle Detection
+UC086 ..> P22 : <<extend>>
+UC086 ..> P23 : <<extend>>
+UC086 ..> P24 : <<extend>>
+UC086 ..> P25 : <<extend>>
+UC086 ..> P26 : <<extend>>
+UC086 ..> P27 : <<extend>>
+UC086 ..> P28 : <<extend>>
+UC086 ..> P29 : <<extend>>
+
+UC084 ..> UC088 : <<include>>
+UC085 ..> UC088 : <<include>>
+UC086 ..> UC088 : <<include>>
+UC087 ..> UC088 : <<include>>
+UC088 ..> UC089 : <<include>>
+
+' Chart Pattern Flow
+User --> UC091
+UC091 --> AlertService
+AlertService --> UC092
+AlertService --> UC093
+AlertService --> UC094
+AlertService --> UC095
+AlertService --> UC096
+
+' Triangle Patterns
+UC095 ..> T1 : <<extend>>
+UC095 ..> T2 : <<extend>>
+UC095 ..> T3 : <<extend>>
+
+' Advanced Chart Patterns
+UC092 ..> C1 : <<extend>>
+UC093 ..> C2 : <<extend>>
+UC093 ..> C3 : <<extend>>
+UC094 ..> C4 : <<extend>>
+UC094 ..> C5 : <<extend>>
+UC096 ..> C6 : <<extend>>
+UC096 ..> C7 : <<extend>>
+
+UC092 ..> UC097 : <<include>>
+UC093 ..> UC097 : <<include>>
+UC094 ..> UC097 : <<include>>
+UC095 ..> UC097 : <<include>>
+UC096 ..> UC097 : <<include>>
+UC097 ..> UC098 : <<include>>
+UC098 ..> UC099 : <<include>>
+
+' Multi-Pattern Selection
+User --> UC101
+UC101 ..> UC102 : <<include>>
+UC102 ..> UC103 : <<include>>
+UC103 ..> UC104 : <<extend>>
+UC101 ..> UC105 : <<extend>>
+UC103 ..> UC106 : <<include>>
+
+' Visualization
+UC089 ..> UC111 : <<include>>
+UC099 ..> UC111 : <<include>>
+UC111 ..> UC112 : <<include>>
+UC111 ..> UC113 : <<include>>
+UC111 ..> UC114 : <<include>>
+UC111 ..> UC115 : <<include>>
+
+note right of UC084
+  **Single Candle Logic:**
+  - Body size ratio
+  - Upper/lower shadow length
+  - Position in trend
+  - Body to total range ratio
+  
+  Example (Hammer):
+  - Small body at top
+  - Long lower shadow (2x body)
+  - Little/no upper shadow
+end note
+
+note right of UC085
+  **Two Candle Logic:**
+  - Compare consecutive candles
+  - Body size relationship
+  - Open/close positions
+  - Engulfing criteria
+  
+  Example (Bullish Engulfing):
+  - Candle 2 body > Candle 1 body
+  - C2 opens below C1 close
+  - C2 closes above C1 open
+end note
+
+note right of UC092
+  **Cup with Handle:**
+  1. Identify cup shape (U-shaped)
+  2. Calculate cup depth
+  3. Find handle pattern
+  4. Measure handle depth
+  5. Validate breakout point
+  
+  Min period: 7 weeks
+  Handle: 1-4 weeks
+end note
+
+note right of UC095
+  **Triangle Detection:**
+  - Identify converging trendlines
+  - Calculate apex point
+  - Measure height & width
+  - Determine breakout direction
+  
+  Types: Ascending, Descending,
+  Symmetrical
+end note
+
+note right of UC101
+  **Multi-Pattern Feature:**
+  - Select up to 49 patterns
+  - Search by name
+  - Category tabs
+  - Badge shows count
+  - Real-time update
+end note
+
+note bottom of UC111
+  **Visualization:**
+  - Markers: Triangle (▲/▼)
+  - Lines: Support/Resistance
+  - Colors: Green (bullish),
+           Red (bearish)
+  - Tooltips: Pattern info
+end note
+
+@enduml

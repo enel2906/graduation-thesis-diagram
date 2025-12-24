@@ -1,0 +1,87 @@
+@startuml
+!theme plain
+title Authentication & Authorization
+left to right direction
+
+actor "User" as User #LightBlue
+actor "Google OAuth" as GoogleOAuth #LightGreen
+actor "JWT Service" as JWTService #Yellow
+
+rectangle "Authentication System" {
+    
+    package "Registration" #LightCyan {
+        usecase "Enter Info" as UC01
+        usecase "Validate Data" as UC02
+        usecase "Hash Password" as UC03
+        usecase "Save to DB" as UC04
+    }
+    
+    package "Login" #LightYellow {
+        usecase "Credential Login" as UC05
+        usecase "Verify Password" as UC06
+        usecase "Generate Tokens" as UC07
+    }
+    
+    package "OAuth" #Lavender {
+        usecase "Google Redirect" as UC08
+        usecase "Exchange Code" as UC09
+        usecase "Get User Info" as UC10
+        usecase "Create/Find User" as UC11
+    }
+    
+    package "Token Management" #LightSalmon {
+        usecase "Refresh Token" as UC12
+        usecase "Validate Token" as UC13
+    }
+    
+    package "Authorization" #Wheat {
+        usecase "Check Access" as UC14
+        usecase "Verify Role" as UC15
+    }
+}
+
+' Relationships
+User --> UC01
+UC01 ..> UC02 : <<include>>
+UC02 ..> UC03 : <<include>>
+UC03 ..> UC04 : <<include>>
+UC04 --> JWTService
+
+User --> UC05
+UC05 ..> UC06 : <<include>>
+UC06 ..> UC07 : <<include>>
+UC07 --> JWTService
+
+User --> UC08
+UC08 --> GoogleOAuth
+GoogleOAuth --> UC09
+UC09 ..> UC10 : <<include>>
+UC10 ..> UC11 : <<include>>
+UC11 --> JWTService
+
+User --> UC12
+UC12 ..> UC13 : <<include>>
+UC13 --> JWTService
+
+UC14 ..> UC15 : <<include>>
+UC14 --> JWTService
+
+note right of UC05
+  Username/Email + Password
+  Response: Access Token (15m)
+            Refresh Token (7d)
+end note
+
+note right of UC08
+  OAuth 2.0 Flow
+  Scope: profile, email
+  Redirect: /login/oauth2/code/google
+end note
+
+note bottom of JWTService
+  Algorithm: HS256
+  Payload: userId, role
+  Expiry: 15 minutes
+end note
+
+@enduml

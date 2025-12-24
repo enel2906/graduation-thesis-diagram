@@ -1,0 +1,309 @@
+@startuml
+!theme plain
+title Admin & Additional Features
+left to right direction
+
+actor "Admin" as Admin #Orange
+actor "User" as User #LightBlue
+actor "VnStock API" as VnStock #Yellow
+
+rectangle "Admin & Features" {
+    
+    package "Stock Management" #LightCyan {
+        usecase "List Stocks" as UC01
+        usecase "Add Stock" as UC02
+        usecase "Delete Stock" as UC03
+        usecase "Fetch History" as UC04
+    }
+    
+    package "System Stats" #LightYellow {
+        usecase "Count Stocks" as UC05
+        usecase "Monitor Health" as UC06
+        usecase "View Logs" as UC07
+    }
+    
+    package "Watchlist" #Lavender {
+        usecase "Create Watchlist" as UC08
+        usecase "Add/Remove Stocks" as UC09
+        usecase "Manage Lists" as UC10
+    }
+    
+    package "Price Board" #LightSalmon {
+        usecase "Display Prices" as UC11
+        usecase "Real-time Update" as UC12
+        usecase "Calculate Changes" as UC13
+    }
+    
+    package "News & Finance" #Wheat {
+        usecase "View News" as UC14
+        usecase "Financial Reports" as UC15
+        usecase "Filter by Date" as UC16
+    }
+    
+    package "Chart Features" #MistyRose {
+        usecase "Zoom/Pan" as UC17
+        usecase "Toggle Theme" as UC18
+        usecase "Export Chart" as UC19
+    }
+}
+
+' Relationships
+Admin --> UC01
+Admin --> UC02
+UC02 ..> UC04 : <<include>>
+UC04 --> VnStock
+Admin --> UC03
+Admin --> UC05
+Admin --> UC06
+Admin --> UC07
+
+User --> UC08
+User --> UC09
+UC08 ..> UC09 : <<include>>
+User --> UC10
+
+User --> UC11
+UC11 ..> UC12 : <<include>>
+UC12 ..> UC13 : <<include>>
+
+User --> UC14
+UC14 --> VnStock
+UC14 ..> UC16 : <<extend>>
+User --> UC15
+UC15 --> VnStock
+
+User --> UC17
+User --> UC18
+User --> UC19
+
+note right of UC02
+  Input: symbol, market
+  Fetch 10 years history
+  Bulk insert to DB
+  Process: 10-30 seconds
+end note
+
+note right of UC05
+  Total stocks by market
+  Total candlesticks
+  Last sync time
+  System health status
+end note
+
+note bottom of UC15
+  4 Report Types:
+  - Balance Sheet
+  - Income Statement
+  - Cash Flow
+  - Financial Ratios
+  Period: Year/Quarter
+end note
+
+@enduml
+
+' Stock Management
+Admin --> UC201
+UC201 --> MongoDB
+UC201 ..> UC202 : <<extend>>
+UC201 ..> UC203 : <<extend>>
+UC201 ..> UC204 : <<extend>>
+UC201 ..> UC205 : <<extend>>
+
+' Add Stock
+Admin --> UC211
+UC211 ..> UC212 : <<include>>
+UC212 ..> UC213 : <<include>>
+UC213 --> MongoDB
+UC213 ..> UC214 : <<include>>
+UC214 --> VnStock
+UC214 ..> UC215 : <<include>>
+UC215 --> VnStock
+UC215 ..> UC216 : <<include>>
+UC216 --> MongoDB
+UC216 ..> UC217 : <<include>>
+UC217 --> MongoDB
+UC217 ..> UC218 : <<include>>
+
+' Delete Stock
+Admin --> UC221
+UC221 ..> UC222 : <<include>>
+UC222 ..> UC223 : <<include>>
+UC223 --> MongoDB
+UC223 ..> UC224 : <<include>>
+UC224 --> MongoDB
+UC224 ..> UC225 : <<include>>
+
+' System Statistics
+Admin --> UC231
+UC231 --> MongoDB
+Admin --> UC232
+UC232 --> MongoDB
+Admin --> UC233
+UC233 --> MongoDB
+Admin --> UC234
+Admin --> UC235
+Admin --> UC236
+
+' Watchlist Management
+User --> UC131
+UC131 ..> UC132 : <<include>>
+User --> UC132
+UC132 --> MongoDB
+User --> UC133
+UC133 --> MongoDB
+UC131 ..> UC134 : <<extend>>
+UC131 ..> UC135 : <<extend>>
+UC131 ..> UC136 : <<extend>>
+
+' Price Board
+User --> UC161
+UC161 ..> UC162 : <<include>>
+UC162 ..> UC163 : <<include>>
+UC163 ..> UC164 : <<include>>
+UC161 ..> UC165 : <<include>>
+UC161 ..> UC166 : <<extend>>
+
+' News & Financial
+User --> UC101
+UC101 --> VnStock
+UC101 ..> UC102 : <<extend>>
+UC101 ..> UC103 : <<extend>>
+User --> UC111
+UC111 --> VnStock
+UC111 ..> UC112 : <<extend>>
+UC111 ..> UC113 : <<extend>>
+UC111 ..> UC114 : <<extend>>
+UC111 ..> UC115 : <<extend>>
+UC111 ..> UC116 : <<extend>>
+
+' Technical Indicators
+User --> UC121
+UC121 ..> UC122 : <<extend>>
+UC121 ..> UC123 : <<extend>>
+UC121 ..> UC124 : <<extend>>
+UC121 ..> UC125 : <<extend>>
+UC121 ..> UC126 : <<include>>
+UC121 ..> UC127 : <<extend>>
+
+' Chart Features
+User --> UC061
+User --> UC062
+User --> UC063
+User --> UC064
+User --> UC065
+User --> UC066
+
+note right of UC211
+  **Add Stock Process:**
+  
+  1. Input: symbol, market
+  2. Validate format (3-4 chars)
+  3. Check if exists in DB
+  4. Fetch from VnStock:
+     - Company name
+     - Exchange info
+  5. Fetch 10 years OHLC data
+  6. Bulk insert candlesticks
+  7. Total time: ~10-30 seconds
+end note
+
+note right of UC213
+  **Validation Rules:**
+  
+  Symbol:
+  - Length: 3-4 characters
+  - Format: Uppercase letters
+  - No special characters
+  
+  Market:
+  - HOSE, HNX, UPCOM (VN)
+  - US (International)
+  
+  Duplicate Check:
+  - Query: {symbol, market}
+end note
+
+note right of UC231
+  **System Statistics:**
+  
+  Display:
+  - Total stocks: 35
+  - HOSE: 20
+  - HNX: 8
+  - UPCOM: 1
+  - US: 6
+  - Total candles: 125,000+
+  - Last sync: 15:30 24/12/2025
+  - RabbitMQ: Connected ✓
+  - MongoDB: Healthy ✓
+end note
+
+note right of UC132
+  **Watchlist Structure:**
+  
+  Collection: watchlists
+  Document:
+  {
+    _id: ObjectId,
+    userId: "user123",
+    name: "My Portfolio",
+    stocks: [
+      {symbol: "VCB", market: "HOSE"},
+      {symbol: "FPT", market: "HOSE"}
+    ],
+    createdAt: Date,
+    updatedAt: Date
+  }
+end note
+
+note right of UC101
+  **News API:**
+  
+  Endpoint: /api/company/news/{symbol}
+  Params: limit=20
+  
+  Response:
+  - Title, subtitle
+  - Summary (HTML stripped)
+  - Image URL
+  - Publish time
+  - Price change %
+  - Source link
+  
+  Source: VCI (vnstock_news)
+end note
+
+note bottom of UC111
+  **Financial Reports:**
+  
+  4 Report Types:
+  1. Balance Sheet
+     (Bảng cân đối kế toán)
+  2. Income Statement
+     (Báo cáo KQKD)
+  3. Cash Flow
+     (Lưu chuyển tiền tệ)
+  4. Financial Ratios
+     (Chỉ số tài chính)
+  
+  Period: Yearly or Quarterly
+  Source: VCI Finance API
+end note
+
+note bottom of UC122
+  **Technical Indicators:**
+  
+  Available:
+  - MA (Moving Average)
+  - EMA (Exponential MA)
+  - RSI (14)
+  - MACD (12,26,9)
+  - Bollinger Bands (20,2)
+  - Stochastic
+  - ATR
+  
+  Note: Currently placeholder
+  Will be implemented later
+end note
+
+@enduml

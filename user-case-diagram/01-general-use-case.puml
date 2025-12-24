@@ -1,0 +1,92 @@
+@startuml
+!theme plain
+title Stock Pattern Detection System - General Use Case
+left to right direction
+
+' Actors
+actor "Investor" as User #LightBlue
+actor "Administrator" as Admin #Orange
+actor "System" as System #LightGray
+actor "VnStock API" as VnStock #LightGreen
+actor "MongoDB" as MongoDB #Yellow
+actor "RabbitMQ" as RabbitMQ #Pink
+
+rectangle "Stock Pattern Detection System" {
+    
+    package "Authentication" #LightCyan {
+        usecase "Register/Login" as UC01
+        usecase "OAuth Authentication" as UC02
+        usecase "Manage Tokens" as UC03
+    }
+    
+    package "Market Analysis" #LightYellow {
+        usecase "View Stock Chart" as UC04
+        usecase "Detect Patterns" as UC05
+        usecase "View News & Reports" as UC06
+    }
+    
+    package "Portfolio" #Lavender {
+        usecase "Manage Watchlist" as UC07
+        usecase "View Price Board" as UC08
+    }
+    
+    package "Real-time" #LightSalmon {
+        usecase "Subscribe Updates" as UC09
+        usecase "WebSocket Connection" as UC10
+    }
+    
+    package "Admin" #Wheat {
+        usecase "Manage Stocks" as UC11
+        usecase "System Statistics" as UC12
+    }
+    
+    package "Data Pipeline" #MistyRose {
+        usecase "Fetch OHLC Data" as UC13
+        usecase "Store Data" as UC14
+        usecase "Periodic Update" as UC15
+    }
+}
+
+' Relationships
+User --> UC01
+User --> UC04
+User --> UC05
+User --> UC06
+User --> UC07
+User --> UC08
+User --> UC09
+
+Admin --> UC11
+Admin --> UC12
+Admin --|> User
+
+System --> UC13
+System --> UC14
+System --> UC15
+
+' Dependencies
+UC01 .> UC03 : <<include>>
+UC04 .> UC05 : <<include>>
+UC09 .> UC10 : <<include>>
+UC15 .> UC13 : <<include>>
+UC02 .> UC01 : <<extend>>
+
+UC13 ..> VnStock : <<uses>>
+UC14 ..> MongoDB : <<uses>>
+UC09 ..> RabbitMQ : <<uses>>
+
+note right of User
+  View charts & analysis
+  Detect price patterns
+  Manage portfolio
+  Real-time updates
+end note
+
+note right of System
+  Auto fetch from VnStock
+  Update every 15 mins
+  Publish via RabbitMQ
+  Store in MongoDB
+end note
+
+@enduml
