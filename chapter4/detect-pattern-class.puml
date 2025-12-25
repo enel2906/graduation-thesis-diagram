@@ -1,0 +1,97 @@
+@startuml detect-pattern-class
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title DetectCandlePatternService Class Diagram
+
+interface DetectCandlePatternService {
+    ' One candle patterns
+    + getHammerCandles(stockId: String): List<CandleStick>
+    + getLongLeggedDoji(stockId: String): List<CandleStick>
+    + getGravestoneDoji(stockId: String): List<CandleStick>
+    + getDragonflyDoji(stockId: String): List<CandleStick>
+    + getInvertedHammerCandles(stockId: String): List<CandleStick>
+    + getHangingManCandles(stockId: String): List<CandleStick>
+    + getShootingStarCandles(stockId: String): List<CandleStick>
+    + getBearishMarubozuPatterns(stockId: String): List<CandleStick>
+    + getBullishMarubozuPatterns(stockId: String): List<CandleStick>
+    + getBearishBeltHold(stockId: String): List<CandleStick>
+    + getBullishBeltHold(stockId: String): List<CandleStick>
+    __
+    ' Two candle patterns
+    + getBullishEngulfingPatterns(stockId: String): List<CandleStick>
+    + getBearishEngulfingPatterns(stockId: String): List<CandleStick>
+    + getBearishKickerPatterns(stockId: String): List<CandleStick>
+    + getBullishKickerPatterns(stockId: String): List<CandleStick>
+    + getPiercingLinePatterns(stockId: String): List<CandleStick>
+    + getTweezerBottomPatterns(stockId: String): List<CandleStick>
+    + getTweezerTopPatterns(stockId: String): List<CandleStick>
+    + getHaramiPatterns(stockId: String): List<CandleStick>
+    + getDarkCloudCoverPatterns(stockId: String): List<CandleStick>
+    __
+    ' Three candle patterns
+    + getThreeWhiteSoldiers(stockId: String): List<CandleStick>
+    + getThreeBlackCrows(stockId: String): List<CandleStick>
+    + getEveningStarPatterns(stockId: String): List<CandleStick>
+    + getMorningStarPatterns(stockId: String): List<CandleStick>
+    + getThreeOutsideUpPatterns(stockId: String): List<CandleStick>
+    + getThreeInsideUpPatterns(stockId: String): List<CandleStick>
+    __
+    ' Multi candle patterns
+    + getFallingThreePatterns(stockId: String): List<CandleStick>
+    + getRisingThreePatterns(stockId: String): List<CandleStick>
+}
+
+class DetectCandlePatternServiceImpl {
+    - candleStickRepository: CandleStickRepository
+    - stockRepository: StockRepository
+    __
+    + getHammerCandles(stockId: String): List<CandleStick>
+    + getBullishEngulfingPatterns(stockId: String): List<CandleStick>
+    + getMorningStarPatterns(stockId: String): List<CandleStick>
+    + getRisingThreePatterns(stockId: String): List<CandleStick>
+    __
+    - isHammer(candle: CandleStick): boolean
+    - isBullishEngulfing(c1: CandleStick, c2: CandleStick): boolean
+    - isMorningStar(c1, c2, c3: CandleStick): boolean
+    - isRisingThree(candles: List<CandleStick>): boolean
+    - getBodySize(candle: CandleStick): double
+    - getUpperShadow(candle: CandleStick): double
+    - getLowerShadow(candle: CandleStick): double
+    - isBullish(candle: CandleStick): boolean
+    - isBearish(candle: CandleStick): boolean
+}
+
+class CandleStick {
+    - id: String
+    - stockId: String
+    - date: LocalDate
+    - open: Double
+    - high: Double
+    - low: Double
+    - close: Double
+    - volume: Long
+    __
+    + getId(): String
+    + getOpen(): Double
+    + getHigh(): Double
+    + getLow(): Double
+    + getClose(): Double
+    + getVolume(): Long
+}
+
+interface CandleStickRepository {
+    + findByStockId(stockId: String): List<CandleStick>
+    + findByStockIdAndDateBetween(stockId, start, end): List<CandleStick>
+}
+
+DetectCandlePatternServiceImpl ..|> DetectCandlePatternService
+DetectCandlePatternServiceImpl --> CandleStickRepository
+DetectCandlePatternServiceImpl ..> CandleStick : uses
+CandleStickRepository ..> CandleStick : returns
+
+@enduml

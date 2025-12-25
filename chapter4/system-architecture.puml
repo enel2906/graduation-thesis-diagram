@@ -1,0 +1,89 @@
+@startuml system-architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title SignalScope System Architecture Design
+
+' External data sources
+cloud "External Data Sources" {
+    [vnstock API] as vnstock
+    [yfinance API] as yfinance
+}
+
+' Client Layer
+rectangle "Client Layer" #LightBlue {
+    [React Client\n(SPA)] as client
+    note right of client
+        - lightweight-charts
+        - STOMP/SockJS
+        - React Router
+    end note
+}
+
+' Service Layer
+rectangle "Service Layer" #LightGreen {
+    rectangle "Data Service" #PaleGreen {
+        [FastAPI\nREST API] as dataApi
+        [Data Fetcher] as fetcher
+        [RabbitMQ Publisher] as publisher
+    }
+    
+    rectangle "Alert Service" #PaleGreen {
+        [Spring Boot\nREST API] as alertApi
+        [Pattern Detector] as detector
+        [RabbitMQ Listener] as listener
+        [WebSocket Server] as wsServer
+    }
+}
+
+' Message Broker
+rectangle "Message Broker" #LightYellow {
+    queue "RabbitMQ\nstock.market.data" as rabbitmq
+}
+
+' Database Layer
+rectangle "Database Layer" #LightCoral {
+    database "MongoDB\ncandlestick_db" as mongodb
+}
+
+' Connections - External to Data Service
+vnstock --> fetcher : "Fetch VN stocks"
+yfinance --> fetcher : "Fetch US stocks"
+
+' Data Service internal connections
+fetcher --> dataApi
+fetcher --> publisher
+dataApi --> mongodb : "CRUD operations"
+publisher --> rabbitmq : "Publish updates"
+
+' Alert Service connections
+rabbitmq --> listener : "Subscribe"
+listener --> detector : "Process candles"
+detector --> mongodb : "Query patterns"
+alertApi --> mongodb : "Query/Store"
+alertApi --> wsServer
+
+' Client connections
+client --> dataApi : "REST API\n(candlesticks, stocks)"
+client --> alertApi : "REST API\n(auth, patterns)"
+wsServer --> client : "WebSocket\n(real-time updates)"
+
+' Notes
+note bottom of mongodb
+    Collections:
+    - stocks
+    - candlesticks
+    - users
+end note
+
+note bottom of rabbitmq
+    Exchange: stock.market.data
+    Routing: stock.update.*
+    Queue: stock.live.updates
+end note
+
+@enduml

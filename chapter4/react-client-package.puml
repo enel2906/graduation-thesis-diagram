@@ -1,0 +1,160 @@
+@startuml react-client-package
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title React Client Package Design
+
+package "react-client/src" {
+    
+    package "components" #LightBlue {
+        class Header {
+            + navigation
+            + search
+            + theme toggle
+            + auth status
+        }
+        
+        class StockChart {
+            + candlestick chart
+            + pattern markers
+            + indicator overlays
+            + volume bars
+        }
+        
+        class IndicatorsModal {
+            + SMA/EMA config
+            + RSI config
+            + MACD config
+            + Bollinger config
+        }
+        
+        class AdvanceSignalModal {
+            + combo signals
+            + backtest results
+        }
+        
+        class NewsModal {
+            + news list
+            + news detail
+        }
+        
+        class FinancialReportModal {
+            + financial ratios
+            + balance sheet
+        }
+        
+        class StockSearchModal {
+            + search input
+            + results list
+        }
+        
+        package "auth" {
+            class LoginForm
+            class RegisterForm
+        }
+    }
+    
+    package "pages" #LightGreen {
+        class AuthPage
+        class AuthCallbackPage
+        class WatchlistPage
+        class AdminPage
+        class AboutPage
+    }
+    
+    package "services" #LightYellow {
+        class apiService {
+            + getCandlesticks()
+            + getStocks()
+            + getPatterns()
+            + getNews()
+            + getFinancials()
+        }
+        
+        class authService {
+            + login()
+            + register()
+            + refreshToken()
+            + logout()
+        }
+        
+        class websocketService {
+            + connect()
+            + subscribe()
+            + disconnect()
+        }
+    }
+    
+    package "context" #LightCoral {
+        class AuthContext {
+            + user
+            + isAuthenticated
+            + login()
+            + logout()
+        }
+    }
+    
+    package "constants" #LightGray {
+        class patternDefinitions {
+            + singlePatterns
+            + doublePatterns
+            + triplePatterns
+            + complexPatterns
+        }
+        
+        class indicatorDefinitions {
+            + trendIndicators
+            + momentumIndicators
+            + volatilityIndicators
+        }
+    }
+    
+    package "utils" #Wheat {
+        class calculations {
+            + calculateSMA()
+            + calculateEMA()
+            + calculateRSI()
+            + calculateMACD()
+        }
+        
+        class formatters {
+            + formatPrice()
+            + formatVolume()
+            + formatDate()
+        }
+    }
+    
+    class App {
+        + routing
+        + state management
+        + theme handling
+    }
+}
+
+' Relationships
+App --> Header
+App --> StockChart
+App --> AuthContext
+
+Header --> StockSearchModal
+Header --> authService
+
+StockChart --> apiService
+StockChart --> patternDefinitions
+StockChart --> indicatorDefinitions
+StockChart --> calculations
+
+IndicatorsModal --> calculations
+AdvanceSignalModal --> apiService
+
+AuthPage --> authService
+AuthPage --> AuthContext
+
+WatchlistPage --> apiService
+WatchlistPage --> AuthContext
+
+@enduml

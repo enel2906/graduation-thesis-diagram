@@ -1,0 +1,111 @@
+@startuml database-schema
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam classFontStyle bold
+
+title MongoDB Database Schema
+
+package "candlestick_db" {
+    
+    class "stocks" <<collection>> {
+        _id: ObjectId
+        --
+        symbol: String [unique, indexed]
+        name: String
+        exchange: String ["HOSE" | "HNX" | "UPCOM"]
+        industry: String
+        sector: String
+        created_at: ISODate
+        updated_at: ISODate
+        --
+        <&star> Indexes:
+        - symbol_1 (unique)
+    }
+    
+    class "candlesticks" <<collection>> {
+        _id: String "{stockId}_{yyyyMMdd}"
+        --
+        stock_id: ObjectId [ref: stocks._id]
+        date: ISODate
+        date_str: String "yyyyMMdd"
+        open: Double
+        high: Double
+        low: Double
+        close: Double
+        volume: NumberLong
+        --
+        <&star> Indexes:
+        - stock_id_1_date_str_1
+        - date_1
+    }
+    
+    class "users" <<collection>> {
+        _id: ObjectId
+        --
+        email: String [unique, indexed]
+        password: String [hashed, optional]
+        name: String
+        role: String ["USER" | "ADMIN"]
+        provider: String ["LOCAL" | "GOOGLE"]
+        provider_id: String [optional]
+        watchlist: Array<String>
+        created_at: ISODate
+        updated_at: ISODate
+        --
+        <&star> Indexes:
+        - email_1 (unique)
+    }
+    
+    class "alert_settings" <<collection>> {
+        _id: ObjectId
+        --
+        user_id: ObjectId [ref: users._id]
+        name: String
+        pattern_types: Array<String>
+        symbols: Array<String>
+        enabled: Boolean
+        notify_methods: Array<String>
+        created_at: ISODate
+        updated_at: ISODate
+        --
+        <&star> Indexes:
+        - user_id_1
+    }
+    
+    class "refresh_tokens" <<collection>> {
+        _id: ObjectId
+        --
+        user_id: ObjectId [ref: users._id]
+        token: String [hashed]
+        expires_at: ISODate
+        created_at: ISODate
+        --
+        <&star> Indexes:
+        - token_1
+        - user_id_1
+    }
+}
+
+stocks "1" -- "*" candlesticks : stock_id
+users "1" -- "*" alert_settings : user_id
+users "1" -- "*" refresh_tokens : user_id
+
+note bottom of candlesticks
+    Sample document:
+    {
+        "_id": "507f1f77bcf86cd799439011_20241225",
+        "stock_id": ObjectId("507f1f77bcf86cd799439011"),
+        "date": ISODate("2024-12-25T00:00:00Z"),
+        "date_str": "20241225",
+        "open": 50.5,
+        "high": 52.3,
+        "low": 49.8,
+        "close": 51.2,
+        "volume": NumberLong(1234567)
+    }
+end note
+
+@enduml

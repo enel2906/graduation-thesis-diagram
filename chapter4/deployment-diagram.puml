@@ -1,0 +1,74 @@
+@startuml deployment-diagram
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam nodeStyle rectangle
+
+title Deployment Architecture Diagram
+
+node "Development Machine" {
+    
+    node "Docker Host" {
+        
+        node "MongoDB Container" as mongoContainer {
+            database "MongoDB 7.0\nPort: 27017" as mongodb
+        }
+        
+        node "RabbitMQ Container" as rabbitContainer {
+            component "RabbitMQ 3.x\nAMQP: 5672\nManagement: 15672" as rabbitmq
+        }
+    }
+    
+    node "Python Runtime" {
+        component "Data Service\n(FastAPI)\nPort: 8000" as dataService
+    }
+    
+    node "JVM (Java 17)" {
+        component "Alert Service\n(Spring Boot 3.3)\nPort: 8080" as alertService
+    }
+    
+    node "Node.js Runtime" {
+        component "React Dev Server\n(Vite)\nPort: 5173" as reactClient
+    }
+}
+
+cloud "External Services" {
+    component "vnstock API" as vnstock
+    component "Google OAuth2" as google
+}
+
+actor "User Browser\n(Chrome)" as user
+
+' Connections
+dataService --> mongodb : "MongoDB Driver"
+alertService --> mongodb : "Spring Data MongoDB"
+
+dataService --> rabbitmq : "aio_pika (AMQP)"
+alertService --> rabbitmq : "Spring AMQP"
+
+dataService --> vnstock : "HTTP/REST"
+alertService --> google : "OAuth2"
+
+user --> reactClient : "HTTP :5173"
+reactClient --> dataService : "REST API :8000"
+reactClient --> alertService : "REST API :8080"
+alertService --> reactClient : "WebSocket/STOMP :8080/ws"
+
+note bottom of dataService
+    Environment Variables:
+    - MONGODB_URI
+    - RABBITMQ_URI
+    - PORT=8000
+end note
+
+note bottom of alertService
+    Configuration:
+    - spring.data.mongodb.uri
+    - spring.rabbitmq.host
+    - cors.allowed-origins
+    - jwt.secret
+end note
+
+@enduml

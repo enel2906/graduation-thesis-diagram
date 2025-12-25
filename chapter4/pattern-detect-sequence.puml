@@ -1,0 +1,62 @@
+@startuml pattern-detect-sequence
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign center
+
+title Sequence Diagram - Pattern Detection Flow
+
+actor "User" as user
+participant "React Client" as client
+participant "ChartPatternController" as controller
+participant "DetectCandlePatternService" as service
+participant "CandleStickRepository" as repo
+database "MongoDB" as db
+
+user -> client : Select pattern "Hammer"
+activate client
+
+client -> controller : GET /api/chart-pattern/{symbol}\n?patterns=hammer
+activate controller
+
+controller -> service : getHammerCandles(stockId)
+activate service
+
+service -> repo : findByStockId(stockId)
+activate repo
+
+repo -> db : db.candlesticks.find({stock_id: stockId})
+activate db
+db --> repo : List<CandleStick>
+deactivate db
+
+repo --> service : List<CandleStick>
+deactivate repo
+
+note right of service
+    For each candlestick:
+    1. Calculate body size
+    2. Calculate lower shadow
+    3. Calculate upper shadow
+    4. Check hammer criteria:
+       - Lower shadow >= 2x body
+       - Upper shadow <= 10% of range
+       - Body in upper third
+end note
+
+service -> service : filter candles matching\nHammer pattern criteria
+
+service --> controller : List<CandleStick> (matching candles)
+deactivate service
+
+controller --> client : PatternResponse\n{symbol, patterns: {hammer: [...]}}
+deactivate controller
+
+client -> client : Render markers on chart\nfor matched candles
+
+client --> user : Display chart with\nHammer patterns highlighted
+deactivate client
+
+@enduml

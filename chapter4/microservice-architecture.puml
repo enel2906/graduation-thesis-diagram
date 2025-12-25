@@ -1,0 +1,69 @@
+@startuml microservice-architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+title Microservice Architecture Style
+
+rectangle "Client Layer" {
+    [Web Browser] as browser
+    [Mobile App] as mobile
+}
+
+rectangle "API Gateway Layer" {
+    [API Gateway] as gateway
+}
+
+rectangle "Service Layer" {
+    [Service A] as serviceA
+    [Service B] as serviceB
+    [Service C] as serviceC
+    [Service D] as serviceD
+}
+
+rectangle "Message Broker" {
+    [Message Queue] as mq
+}
+
+rectangle "Data Layer" {
+    database "Database A" as dbA
+    database "Database B" as dbB
+    database "Database C" as dbC
+}
+
+browser --> gateway
+mobile --> gateway
+
+gateway --> serviceA
+gateway --> serviceB
+gateway --> serviceC
+gateway --> serviceD
+
+serviceA --> mq
+serviceB --> mq
+serviceC --> mq
+serviceD --> mq
+
+serviceA --> dbA
+serviceB --> dbB
+serviceC --> dbC
+
+note right of gateway
+    API Gateway handles:
+    - Request routing
+    - Load balancing
+    - Authentication
+    - Rate limiting
+end note
+
+note bottom of mq
+    Message Queue enables:
+    - Async communication
+    - Service decoupling
+    - Event-driven architecture
+end note
+
+@enduml

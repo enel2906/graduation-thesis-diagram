@@ -1,0 +1,159 @@
+@startuml alert-service-package
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+
+title Alert Service Package Design (Spring Boot)
+
+package "com.example.alert" {
+    
+    package "controller" #LightBlue {
+        class AuthController {
+            + login()
+            + register()
+            + refreshToken()
+            + googleCallback()
+        }
+        
+        class ChartPatternController {
+            + getPatterns()
+            + detectPattern()
+        }
+        
+        class StockChartController {
+            + getCandlesticks()
+            + getStock()
+        }
+        
+        class AdminController {
+            + manageStocks()
+            + manageUsers()
+        }
+        
+        class UserController {
+            + getProfile()
+            + updateWatchlist()
+        }
+    }
+    
+    package "service" #LightGreen {
+        interface DetectCandlePatternService {
+            + getHammerCandles()
+            + getBullishEngulfingPatterns()
+            + getMorningStarPatterns()
+            + ... (50+ patterns)
+        }
+        
+        class DetectCandlePatternServiceImpl
+        
+        class ComplexPatternDetectorService {
+            + detectCupWithHandle()
+            + detectHeadAndShoulders()
+        }
+        
+        class CandleStickService {
+            + getCandlesticks()
+            + saveCandlestick()
+        }
+        
+        class AuthService {
+            + authenticate()
+            + generateToken()
+            + validateToken()
+        }
+        
+        class StockDataListener {
+            + handleStockUpdate()
+        }
+    }
+    
+    package "repository" #LightYellow {
+        interface CandleStickRepository {
+            + findByStockId()
+            + findByDateRange()
+        }
+        
+        interface StockRepository {
+            + findBySymbol()
+            + findAll()
+        }
+        
+        interface UserRepository {
+            + findByEmail()
+            + save()
+        }
+    }
+    
+    package "domain" #LightCoral {
+        class CandleStick {
+            - id: String
+            - stockId: String
+            - date: LocalDate
+            - open: Double
+            - high: Double
+            - low: Double
+            - close: Double
+            - volume: Long
+        }
+        
+        class Stock {
+            - id: String
+            - symbol: String
+            - name: String
+            - exchange: String
+        }
+        
+        class User {
+            - id: String
+            - email: String
+            - password: String
+            - role: Role
+            - watchlist: List<String>
+        }
+    }
+    
+    package "config" #LightGray {
+        class RabbitMQConfig
+        class WebSocketConfig
+        class SecurityConfig
+    }
+    
+    package "security" #Pink {
+        class JwtTokenProvider
+        class JwtAuthenticationFilter
+        class CustomOAuth2UserService
+    }
+    
+    package "dto" #Wheat {
+        class LoginRequest
+        class LoginResponse
+        class PatternResponse
+        class CandleStickDTO
+    }
+}
+
+' Relationships
+AuthController --> AuthService
+ChartPatternController --> DetectCandlePatternService
+ChartPatternController --> ComplexPatternDetectorService
+StockChartController --> CandleStickService
+
+DetectCandlePatternServiceImpl ..|> DetectCandlePatternService
+DetectCandlePatternServiceImpl --> CandleStickRepository
+
+AuthService --> UserRepository
+AuthService --> JwtTokenProvider
+
+CandleStickService --> CandleStickRepository
+CandleStickService --> StockRepository
+
+StockDataListener --> CandleStickService
+
+CandleStickRepository --> CandleStick
+StockRepository --> Stock
+UserRepository --> User
+
+@enduml

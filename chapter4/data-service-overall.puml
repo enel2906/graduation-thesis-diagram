@@ -1,0 +1,74 @@
+@startuml data-service-overall
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title Data Service Overall Design
+
+rectangle "Data Service (Python FastAPI)" #LightGreen {
+    
+    rectangle "API Layer" {
+        [REST API Endpoints] as api
+        note right of api
+            /api/candlesticks/{symbol}
+            /api/stocks
+            /api/company/{symbol}
+            /api/financial/{symbol}
+            /api/admin/stocks
+        end note
+    }
+    
+    rectangle "Business Logic Layer" {
+        [Data Fetcher] as fetcher
+        [Background Tasks] as tasks
+        [Stock Updater] as updater
+    }
+    
+    rectangle "Integration Layer" {
+        [vnstock Client] as vnstockClient
+        [yfinance Client] as yfinanceClient
+        [RabbitMQ Publisher] as publisher
+    }
+    
+    rectangle "Data Access Layer" {
+        [MongoDB Repository] as repo
+    }
+}
+
+cloud "External APIs" {
+    [vnstock] as vnstockApi
+    [yfinance] as yfinanceApi
+}
+
+database "MongoDB" as mongodb
+
+queue "RabbitMQ" as rabbitmq
+
+' Connections
+api --> fetcher
+api --> repo
+
+tasks --> updater
+updater --> fetcher
+updater --> publisher
+
+fetcher --> vnstockClient
+fetcher --> yfinanceClient
+fetcher --> repo
+
+vnstockClient --> vnstockApi
+yfinanceClient --> yfinanceApi
+
+repo --> mongodb
+publisher --> rabbitmq
+
+note bottom of tasks
+    Runs every 15 minutes
+    during trading hours
+    (9:00 - 15:00)
+end note
+
+@enduml

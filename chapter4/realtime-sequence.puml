@@ -1,0 +1,68 @@
+@startuml realtime-sequence
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign center
+
+title Sequence Diagram - Real-time Update Flow
+
+participant "vnstock API" as vnstock
+participant "Data Service\n(FastAPI)" as dataService
+queue "RabbitMQ" as rabbitmq
+participant "Alert Service\n(Spring Boot)" as alertService
+participant "StockDataListener" as listener
+participant "CandleStickService" as candleService
+database "MongoDB" as db
+participant "WebSocket Server" as wsServer
+participant "React Client" as client
+
+== Data Service Fetches Updates ==
+
+dataService -> vnstock : fetch_candlesticks(symbol)
+activate dataService
+vnstock --> dataService : Candlestick data
+dataService -> db : upsert candlestick
+dataService -> rabbitmq : publish("stock.update.{symbol}",\n{symbol, open, high, low, close, volume})
+deactivate dataService
+
+== Alert Service Receives Update ==
+
+rabbitmq -> listener : @RabbitListener\nhandleStockUpdate(message)
+activate listener
+
+listener -> listener : parseMessage(message)\n-> StockUpdateDTO
+
+listener -> candleService : upsertCandlestick(candle)
+activate candleService
+candleService -> db : upsert
+db --> candleService : saved
+candleService --> listener : CandleStick
+deactivate candleService
+
+deactivate listener
+
+== Client Real-time Connection ==
+
+client -> wsServer : STOMP CONNECT\n/ws (SockJS)
+activate wsServer
+wsServer --> client : CONNECTED
+
+client -> wsServer : SUBSCRIBE\n/topic/stock-updates
+
+note right of wsServer
+    Client subscribed to
+    real-time updates
+end note
+
+== Broadcast Update to Client ==
+
+alertService -> wsServer : sendToTopic(\n"/topic/stock-updates",\nstockUpdate)
+wsServer -> client : MESSAGE\n/topic/stock-updates\n{symbol, price, ...}
+
+client -> client : Update chart with\nnew candlestick data
+
+deactivate wsServer
+
+@enduml

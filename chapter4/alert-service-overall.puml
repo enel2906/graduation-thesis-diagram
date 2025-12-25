@@ -1,0 +1,84 @@
+@startuml alert-service-overall
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title Alert Service Overall Design
+
+rectangle "Alert Service (Spring Boot 3.3)" #LightGoldenRodYellow {
+    
+    rectangle "Controller Layer" {
+        [AuthController] as authCtrl
+        [ChartPatternController] as patternCtrl
+        [StockChartController] as chartCtrl
+        [AdminController] as adminCtrl
+    }
+    
+    rectangle "Service Layer" {
+        [AuthService] as authSvc
+        [DetectCandlePatternService] as detectSvc
+        [ComplexPatternDetectorService] as complexSvc
+        [CandleStickService] as candleSvc
+    }
+    
+    rectangle "Messaging Layer" {
+        [StockDataListener] as listener
+        [WebSocket Handler] as wsHandler
+    }
+    
+    rectangle "Security Layer" {
+        [JWT Filter] as jwtFilter
+        [OAuth2 Handler] as oauth2
+    }
+    
+    rectangle "Repository Layer" {
+        [CandleStickRepository] as candleRepo
+        [UserRepository] as userRepo
+        [StockRepository] as stockRepo
+    }
+}
+
+queue "RabbitMQ" as rabbitmq
+database "MongoDB" as mongodb
+actor "React Client" as client
+cloud "Google OAuth2" as google
+
+' Connections
+rabbitmq --> listener : "stock.update.*"
+listener --> candleSvc
+
+authCtrl --> authSvc
+patternCtrl --> detectSvc
+patternCtrl --> complexSvc
+chartCtrl --> candleSvc
+adminCtrl --> stockRepo
+
+authSvc --> jwtFilter
+authSvc --> oauth2
+oauth2 --> google
+
+detectSvc --> candleRepo
+complexSvc --> candleRepo
+candleSvc --> candleRepo
+candleSvc --> stockRepo
+
+candleRepo --> mongodb
+userRepo --> mongodb
+stockRepo --> mongodb
+
+client --> authCtrl : "REST API"
+client --> patternCtrl : "REST API"
+wsHandler --> client : "WebSocket/STOMP"
+
+note right of detectSvc
+    Supports 50+ patterns:
+    - Single candle (Hammer, Doji...)
+    - Double candle (Engulfing...)
+    - Triple candle (Morning Star...)
+    - Multi candle (Rising Three...)
+end note
+
+@enduml

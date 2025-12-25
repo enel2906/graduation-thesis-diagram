@@ -1,0 +1,105 @@
+@startuml data-service-package
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title Data Service Package Design (Python FastAPI)
+
+package "data-service" {
+    
+    package "API Endpoints" #LightBlue {
+        class "/api/candlesticks" as candleApi {
+            GET /{symbol}
+            GET /{symbol}/range
+        }
+        
+        class "/api/stocks" as stocksApi {
+            GET /
+            GET /{symbol}
+        }
+        
+        class "/api/company" as companyApi {
+            GET /{symbol}/overview
+            GET /{symbol}/officers
+        }
+        
+        class "/api/financial" as financialApi {
+            GET /{symbol}/reports
+            GET /{symbol}/ratios
+        }
+        
+        class "/api/news" as newsApi {
+            GET /{symbol}
+        }
+        
+        class "/api/admin" as adminApi {
+            POST /stocks
+            PUT /stocks/{symbol}
+            DELETE /stocks/{symbol}
+            POST /fetch-all
+        }
+    }
+    
+    package "Data Fetcher" #LightGreen {
+        class "VnstockFetcher" as vnFetcher {
+            + fetch_stock_list()
+            + fetch_candlesticks()
+            + fetch_company_info()
+            + fetch_financial_reports()
+        }
+        
+        class "YfinanceFetcher" as yFetcher {
+            + fetch_international_stocks()
+            + fetch_candlesticks()
+        }
+    }
+    
+    package "Background Tasks" #LightYellow {
+        class "StockUpdater" as updater {
+            + update_all_stocks()
+            + backfill_historical()
+            + schedule_updates()
+        }
+    }
+    
+    package "RabbitMQ Integration" #LightCoral {
+        class "RabbitMQPublisher" as publisher {
+            + init_rabbitmq()
+            + publish_stock_update()
+            + close_connection()
+        }
+    }
+    
+    package "MongoDB Repository" #LightGray {
+        class "StocksCollection" as stocksCol {
+            + find_all()
+            + find_by_symbol()
+            + upsert()
+        }
+        
+        class "CandlesticksCollection" as candleCol {
+            + find_by_stock()
+            + find_by_range()
+            + upsert_candle()
+        }
+    }
+}
+
+' Relationships
+candleApi --> candleCol
+stocksApi --> stocksCol
+adminApi --> stocksCol
+adminApi --> updater
+
+updater --> vnFetcher
+updater --> yFetcher
+updater --> publisher
+updater --> candleCol
+
+vnFetcher --> stocksCol
+vnFetcher --> candleCol
+
+@enduml

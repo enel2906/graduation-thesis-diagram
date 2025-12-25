@@ -1,0 +1,140 @@
+@startuml
+' ==========================================
+' SignalScope - General Use Case Diagram (VI)
+' Nguồn: stock-pattern-detect-system-feature-20251222_initAdvanceIndicator
+' ==========================================
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecaseBorderColor #444444
+skinparam usecaseBackgroundColor #F8F8F8
+
+actor "Khách / Visitor" as Guest
+actor "Người dùng (đã đăng nhập)" as User
+actor "Quản trị / Vận hành" as Admin
+
+actor "Google OAuth" as Google <<external>>
+actor "Nguồn dữ liệu thị trường\n(vnstock / yfinance)" as Market <<external>>
+actor "RabbitMQ Broker" as MQ <<external>>
+actor "Scheduler / Timer" as Timer <<external>>
+
+Guest <|-- User
+
+rectangle "SignalScope - Hệ thống phát hiện mô hình\n(Stock Pattern Detection System)" as System {
+
+  package "Tài khoản & Xác thực" {
+    usecase UC_Register as "Đăng ký tài khoản"
+    usecase UC_Login as "Đăng nhập (username/email)"
+    usecase UC_OAuth as "Đăng nhập bằng Google"
+    usecase UC_Refresh as "Làm mới Access Token"
+    usecase UC_Profile as "Xem thông tin cá nhân (/me)"
+    usecase UC_Logout as "Đăng xuất"
+  }
+
+  package "Thông tin thị trường" {
+    usecase UC_PriceBoard as "Xem Bảng giá (Price Board)\n(real-time)"
+    usecase UC_News as "Xem Tin tức doanh nghiệp"
+    usecase UC_Financial as "Xem Báo cáo tài chính\n(BS/IS/CF + ratios)"
+  }
+
+  package "Biểu đồ & Phân tích" {
+    usecase UC_SelectStock as "Tìm kiếm & Chọn mã cổ phiếu"
+    usecase UC_ViewChart as "Xem biểu đồ nến\n(OHLC + Volume)"
+    usecase UC_SubscribeRT as "Nhận cập nhật real-time\n(WebSocket/STOMP)"
+
+    usecase UC_ConfigIndicators as "Chọn/Cấu hình Indicators"
+    usecase UC_RenderIndicators as "Hiển thị Indicators lên chart\n(RSI, MACD, BB, ...)"
+
+    usecase UC_ConfigPatterns as "Chọn/Cấu hình Patterns"
+    usecase UC_DetectCandle as "Phát hiện mô hình nến\n(40+ mẫu)"
+    usecase UC_DetectChart as "Phát hiện mô hình biểu đồ\n(CWH, Flag, Double, H&S, Triangle, Pennant)"
+    usecase UC_RenderMarkers as "Vẽ marker/shape pattern\ntrên chart"
+  }
+
+  package "Advance Signal & Backtest" {
+    usecase UC_ConfigCombo as "Cấu hình Combo Signal\n(Pattern + Indicator rules)"
+    usecase UC_RunBacktest as "Chạy Backtest & thống kê\n(success/fail/neutral)"
+    usecase UC_ApplyBacktest as "Áp marker Backtest\nlên chart"
+    usecase UC_RealtimeCombo as "Kiểm tra signal real-time\ntrên nến mới nhất"
+  }
+
+  package "Tùy chỉnh & Điều hướng" {
+    usecase UC_Theme as "Chuyển Dark/Light theme"
+    usecase UC_About as "Xem trang About"
+  }
+
+  package "Luồng dữ liệu & Vận hành" {
+    usecase UC_Ingest as "Đồng bộ dữ liệu thị trường\n(history + incremental)"
+    usecase UC_Store as "Lưu/Cập nhật dữ liệu nến\n(MongoDB)"
+    usecase UC_Publish as "Publish cập nhật giá\n(RabbitMQ exchange)"
+    usecase UC_Forward as "Đẩy dữ liệu tới client\nqua WebSocket topic"
+
+    usecase UC_Health as "Kiểm tra Health/Stats"
+    usecase UC_ForceUpdate as "Trigger cập nhật ngay"
+  }
+}
+
+' ==========================================
+' Liên kết Actor -> Use case
+' ==========================================
+Guest --> UC_SelectStock
+Guest --> UC_ViewChart
+Guest --> UC_SubscribeRT
+Guest --> UC_PriceBoard
+Guest --> UC_News
+Guest --> UC_Financial
+Guest --> UC_Theme
+Guest --> UC_About
+Guest --> UC_Login
+Guest --> UC_Register
+Guest --> UC_OAuth
+
+User --> UC_Profile
+User --> UC_Logout
+User --> UC_Refresh
+User --> UC_ConfigIndicators
+User --> UC_ConfigPatterns
+User --> UC_ConfigCombo
+User --> UC_RunBacktest
+User --> UC_ApplyBacktest
+User --> UC_RealtimeCombo
+
+Admin --> UC_Health
+Admin --> UC_ForceUpdate
+
+Google --> UC_OAuth
+Market --> UC_Ingest
+Timer --> UC_Ingest
+MQ --> UC_Publish
+MQ --> UC_Forward
+
+' ==========================================
+' Quan hệ include/extend (mức tổng quan)
+' ==========================================
+UC_ViewChart ..> UC_SelectStock : <<include>>
+UC_SubscribeRT ..> UC_ViewChart : <<extend>>
+
+UC_ConfigIndicators ..> UC_RenderIndicators : <<include>>
+UC_RenderIndicators ..> UC_ViewChart : <<extend>>
+
+UC_ConfigPatterns ..> UC_DetectCandle : <<include>>
+UC_ConfigPatterns ..> UC_DetectChart : <<include>>
+UC_RenderMarkers ..> UC_DetectCandle : <<include>>
+UC_RenderMarkers ..> UC_DetectChart : <<include>>
+UC_RenderMarkers ..> UC_ViewChart : <<extend>>
+
+UC_ConfigCombo ..> UC_ConfigPatterns : <<include>>
+UC_ConfigCombo ..> UC_ConfigIndicators : <<include>>
+UC_RunBacktest ..> UC_ConfigCombo : <<include>>
+UC_ApplyBacktest ..> UC_RunBacktest : <<extend>>
+UC_RealtimeCombo ..> UC_SubscribeRT : <<include>>
+
+UC_Ingest ..> UC_Store : <<include>>
+UC_Ingest ..> UC_Publish : <<include>>
+UC_Forward ..> UC_Publish : <<include>>
+UC_ForceUpdate ..> UC_Ingest : <<include>>
+UC_Health ..> UC_Store : <<include>>
+
+@enduml

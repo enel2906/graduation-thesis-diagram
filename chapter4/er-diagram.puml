@@ -1,0 +1,86 @@
+@startuml er-diagram
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title Entity Relationship Diagram
+
+entity "Stock" as stock {
+    * _id : ObjectId <<PK>>
+    --
+    * symbol : String <<unique>>
+    * name : String
+    * exchange : String
+    industry : String
+    created_at : DateTime
+    updated_at : DateTime
+}
+
+entity "Candlestick" as candlestick {
+    * _id : String <<PK>>
+    --
+    * stock_id : ObjectId <<FK>>
+    * date : DateTime
+    * date_str : String
+    * open : Double
+    * high : Double
+    * low : Double
+    * close : Double
+    * volume : Long
+}
+
+entity "User" as user {
+    * _id : ObjectId <<PK>>
+    --
+    * email : String <<unique>>
+    password : String
+    * name : String
+    * role : String
+    provider : String
+    provider_id : String
+    watchlist : Array<String>
+    created_at : DateTime
+    updated_at : DateTime
+}
+
+entity "AlertSetting" as alertSetting {
+    * _id : ObjectId <<PK>>
+    --
+    * user_id : ObjectId <<FK>>
+    * pattern_type : String
+    * symbols : Array<String>
+    * enabled : Boolean
+    created_at : DateTime
+}
+
+stock ||--o{ candlestick : "has many"
+user ||--o{ alertSetting : "has many"
+
+note right of stock
+    exchange values:
+    - HOSE
+    - HNX
+    - UPCOM
+end note
+
+note right of candlestick
+    _id format:
+    {stock_id}_{yyyyMMdd}
+    
+    Compound index on:
+    (stock_id, date_str)
+end note
+
+note right of user
+    role values:
+    - USER
+    - ADMIN
+    
+    provider values:
+    - LOCAL
+    - GOOGLE
+end note
+
+@enduml

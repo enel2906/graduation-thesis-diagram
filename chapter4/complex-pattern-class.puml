@@ -1,0 +1,69 @@
+@startuml complex-pattern-class
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title ComplexPatternDetectorService Class Diagram
+
+class ComplexPatternDetectorService {
+    - candleStickRepository: CandleStickRepository
+    - stockRepository: StockRepository
+    __
+    + detectCupWithHandle(stockId: String): CupWithHandleResult
+    + detectHeadAndShoulders(stockId: String): HeadAndShouldersResult
+    + detectDoubleTop(stockId: String): DoubleTopResult
+    + detectDoubleBottom(stockId: String): DoubleBottomResult
+    + detectTriangle(stockId: String): TriangleResult
+    __
+    - findLocalMaxima(prices: List<Double>, window: int): List<Point>
+    - findLocalMinima(prices: List<Double>, window: int): List<Point>
+    - calculateTrendLine(points: List<Point>): TrendLine
+    - validateCupDepth(cup: CupPattern): boolean
+    - validateHandleDepth(handle: HandlePattern): boolean
+}
+
+class CupWithHandleResult {
+    - stockId: String
+    - startDate: LocalDate
+    - endDate: LocalDate
+    - cupStartPrice: Double
+    - cupBottomPrice: Double
+    - cupEndPrice: Double
+    - handleStartPrice: Double
+    - handleEndPrice: Double
+    - breakoutPrice: Double
+    - patternStrength: Double
+    __
+    + isValid(): boolean
+    + getTargetPrice(): Double
+}
+
+class ChartPatternController {
+    - detectCandlePatternService: DetectCandlePatternService
+    - complexPatternDetectorService: ComplexPatternDetectorService
+    __
+    + getPatterns(symbol: String, patterns: List<String>): PatternResponse
+    + detectComplexPattern(symbol: String, patternType: String): ComplexPatternResponse
+}
+
+class PatternResponse {
+    - symbol: String
+    - patterns: Map<String, List<CandleStick>>
+}
+
+class ComplexPatternResponse {
+    - symbol: String
+    - patternType: String
+    - result: Object
+    - confidence: Double
+}
+
+ChartPatternController --> ComplexPatternDetectorService
+ComplexPatternDetectorService --> CupWithHandleResult : creates
+ChartPatternController ..> PatternResponse : returns
+ChartPatternController ..> ComplexPatternResponse : returns
+
+@enduml
