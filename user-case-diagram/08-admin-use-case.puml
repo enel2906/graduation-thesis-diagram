@@ -28,7 +28,7 @@ rectangle "Stock Management" {
 
 rectangle "System Management" {
     usecase "View System Status" as UC10
-    usecase "View Database Stats" as UC11
+    usecase "Manage Users" as UC11
 }
 
 Admin --> UC1
@@ -37,6 +37,7 @@ Admin --> UC3
 Admin --> UC4
 Admin --> UC6
 Admin --> UC10
+Admin --> UC11
 
 MongoDB <-- UC1
 MongoDB <-- UC5
