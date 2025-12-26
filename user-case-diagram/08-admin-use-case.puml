@@ -11,10 +11,9 @@ title Admin Module - Detailed Use Case
 left to right direction
 
 actor "Admin" as Admin #Orange
-actor "MongoDB" as MongoDB #LightGreen
 actor "VNStock" as VNStock #Yellow
 
-rectangle "Stock Management" {
+rectangle "Admin Management" {
     usecase "View All Stocks" as UC1
     usecase "Add VN Stock" as UC2
     usecase "Add US Stock" as UC3
@@ -24,9 +23,7 @@ rectangle "Stock Management" {
     
     UC2 ..> UC5 : <<include>>
     UC3 ..> UC5 : <<include>>
-}
 
-rectangle "System Management" {
     usecase "View System Status" as UC10
     usecase "Manage Users" as UC11
 }
@@ -39,8 +36,6 @@ Admin --> UC6
 Admin --> UC10
 Admin --> UC11
 
-MongoDB <-- UC1
-MongoDB <-- UC5
 VNStock <-- UC5
 
-@enduml
+@enduml00000

@@ -9,14 +9,11 @@ skinparam defaultFontSize 11
 title StockDataListener Class Diagram
 
 class StockDataListener {
-    - candleStickService: CandleStickService
-    - stockRepository: StockRepository
-    - objectMapper: ObjectMapper
+    - messagingTemplate: SimpMessagingTemplate
+    - connectionFactory: ConnectionFactory
     __
-    + handleStockUpdate(message: String): void
-    - processCandle(stockUpdate: StockUpdateDTO): void
-    - parseMessage(message: String): StockUpdateDTO
-    - upsertCandlestick(candle: CandleStick): void
+    + onApplicationReady(): void
+    + receiveStockUpdate(stockUpdate: StockUpdateDTO): void
 }
 
 class StockUpdateDTO {
@@ -28,16 +25,6 @@ class StockUpdateDTO {
     - close: Double
     - volume: Long
     - dateStr: String
-}
-
-class CandleStickService {
-    - candleStickRepository: CandleStickRepository
-    - stockRepository: StockRepository
-    __
-    + getCandlesticks(symbol: String): List<CandleStick>
-    + getCandlesticksByRange(symbol: String, start: LocalDate, end: LocalDate): List<CandleStick>
-    + saveCandlestick(candle: CandleStick): CandleStick
-    + upsertCandlestick(candle: CandleStick): CandleStick
 }
 
 class RabbitMQConfig <<@Configuration>> {
@@ -52,18 +39,22 @@ class RabbitMQConfig <<@Configuration>> {
     + rabbitTemplate(ConnectionFactory): RabbitTemplate
 }
 
+class SimpMessagingTemplate {
+    + convertAndSend(destination: String, payload: Object): void
+}
+
 queue "RabbitMQ\nstock.live.updates" as rabbitmq
 
 rabbitmq --> StockDataListener : "@RabbitListener"
-StockDataListener --> CandleStickService
-StockDataListener ..> StockUpdateDTO : parses
-CandleStickService --> CandleStick : manages
+StockDataListener --> SimpMessagingTemplate : broadcasts
+StockDataListener ..> StockUpdateDTO : receives
 
 note right of StockDataListener
     Listens to RabbitMQ queue
     "stock.live.updates"
-    Processes real-time stock updates
-    from Data Service
+    Broadcasts updates to
+    WebSocket clients via
+    SimpMessagingTemplate
 end note
 
 note bottom of RabbitMQConfig

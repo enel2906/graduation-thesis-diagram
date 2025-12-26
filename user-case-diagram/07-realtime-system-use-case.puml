@@ -40,9 +40,5 @@ AlertService --> UC4
 User --> UC5
 User --> UC7
 
-note bottom of UC2
-  Routing: stock.update.{symbol}
-  Interval: 15 minutes
-end note
 
 @enduml

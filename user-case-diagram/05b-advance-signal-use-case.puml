@@ -1,0 +1,80 @@
+@startuml Advance Signal Use Case
+skinparam backgroundColor white
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam usecaseBackgroundColor #FFF3E0
+skinparam usecaseBorderColor #FF9800
+
+title Advance Signal Module - Detailed Use Case
+
+left to right direction
+
+actor "Registered User" as User #LightBlue
+
+rectangle "Advance Signal (Combo Signals)" {
+    usecase "Open Advance Signal Modal" as UC0
+    
+    rectangle "Signal Monitoring" {
+        usecase "View Available\nCombo Signals" as UC1
+        usecase "Browse Bullish Signals" as UC1a
+        usecase "Browse Bearish Signals" as UC1b
+        usecase "Browse Neutral Signals" as UC1c
+        usecase "Toggle Combo Signal\n(Enable/Disable)" as UC2
+        usecase "View Signal Details\n& Conditions" as UC3
+    }
+    
+    rectangle "Backtesting" {
+        usecase "Select Signal for Backtest" as UC4
+        usecase "Configure Lookback Period\n(1-12 months)" as UC5
+        usecase "Run Backtest" as UC6
+        usecase "View Backtest Results" as UC7
+        usecase "Apply Results to Chart" as UC8
+    }
+    
+    usecase "Clear All Signals" as UC9
+}
+
+User --> UC0
+User --> UC2
+User --> UC4
+User --> UC9
+
+UC0 ..> UC1 : <<include>>
+
+UC1 ..> UC1a : <<extend>>
+UC1 ..> UC1b : <<extend>>
+UC1 ..> UC1c : <<extend>>
+
+UC2 ..> UC3 : <<extend>>
+
+UC4 ..> UC5 : <<include>>
+UC5 ..> UC6 : <<include>>
+UC6 ..> UC7 : <<include>>
+UC7 ..> UC8 : <<extend>>
+
+note right of UC2
+  Combo signals combine:
+  - Candlestick patterns
+  - Chart patterns
+  - Technical indicators
+  into unified decision rules
+end note
+
+note right of UC7
+  Backtest results include:
+  - Success/Failure/Neutral count
+  - Success rate percentage
+  - Detailed evaluation per signal
+  - Entry/Exit prices
+end note
+
+note bottom of UC8
+  Markers show signal
+  occurrences with
+  color-coded results
+  on the chart
+end note
+
+@enduml

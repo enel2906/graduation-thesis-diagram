@@ -14,16 +14,14 @@ left to right direction
 actor "Authenticated User" as User #LightBlue
 actor "VNStock API" as VNStock #LightGreen
 
-rectangle "Company News" as CN {
+rectangle "Company Information" as CI {
     usecase "View Company News" as UC1
     usecase "Open News Article" as UC2
     usecase "Filter by Date" as UC3
     
     UC1 ..> UC2 : <<extend>>
     UC1 ..> UC3 : <<extend>>
-}
 
-rectangle "Financial Reports" as FR {
     usecase "View Financial Reports" as UC4
     usecase "View Balance Sheet" as UC5
     usecase "View Income Statement" as UC6

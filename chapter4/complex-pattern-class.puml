@@ -6,64 +6,71 @@ skinparam classAttributeIconSize 0
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
 
-title ComplexPatternDetectorService Class Diagram
+title Chart Pattern Detection Services Class Diagram
 
-class ComplexPatternDetectorService {
-    - candleStickRepository: CandleStickRepository
-    - stockRepository: StockRepository
+class ChartPatternDetectionService {
+    - candleStickService: CandleStickService
+    - flagPatternService: FlagPatternService
+    - doublePatternService: DoublePatternService
+    - headAndShouldersService: HeadAndShouldersService
+    - inverseHeadAndShouldersService: InverseHeadAndShouldersService
+    - pennantService: PennantService
+    - triangleService: TriangleService
     __
-    + detectCupWithHandle(stockId: String): CupWithHandleResult
-    + detectHeadAndShoulders(stockId: String): HeadAndShouldersResult
-    + detectDoubleTop(stockId: String): DoubleTopResult
-    + detectDoubleBottom(stockId: String): DoubleBottomResult
-    + detectTriangle(stockId: String): TriangleResult
-    __
-    - findLocalMaxima(prices: List<Double>, window: int): List<Point>
-    - findLocalMinima(prices: List<Double>, window: int): List<Point>
-    - calculateTrendLine(points: List<Point>): TrendLine
-    - validateCupDepth(cup: CupPattern): boolean
-    - validateHandleDepth(handle: HandlePattern): boolean
+    + analyzeAllPatterns(stockId: String): ChartPatternResult
 }
 
-class CupWithHandleResult {
-    - stockId: String
-    - startDate: LocalDate
-    - endDate: LocalDate
-    - cupStartPrice: Double
-    - cupBottomPrice: Double
-    - cupEndPrice: Double
-    - handleStartPrice: Double
-    - handleEndPrice: Double
-    - breakoutPrice: Double
-    - patternStrength: Double
-    __
-    + isValid(): boolean
-    + getTargetPrice(): Double
+interface ComplexPatternDetectorService {
+    + getNearestCupWithHandle(smaValues: List<Double>): CupWithHandle
 }
 
-class ChartPatternController {
-    - detectCandlePatternService: DetectCandlePatternService
-    - complexPatternDetectorService: ComplexPatternDetectorService
-    __
-    + getPatterns(symbol: String, patterns: List<String>): PatternResponse
-    + detectComplexPattern(symbol: String, patternType: String): ComplexPatternResponse
+class HeadAndShouldersService {
+    + findHeadAndShouldersPatterns(ohlcDataList, lookback, pivotInterval, ...): List<HeadAndShouldersPattern>
 }
 
-class PatternResponse {
-    - symbol: String
-    - patterns: Map<String, List<CandleStick>>
+class DoublePatternService {
+    + findDoubleTopPatterns(ohlcDataList, ...): List<DoublePattern>
+    + findDoubleBottomPatterns(ohlcDataList, ...): List<DoublePattern>
 }
 
-class ComplexPatternResponse {
-    - symbol: String
-    - patternType: String
-    - result: Object
-    - confidence: Double
+class TriangleService {
+    + findTrianglePatterns(ohlcDataList, ...): List<TrianglePattern>
 }
 
-ChartPatternController --> ComplexPatternDetectorService
-ComplexPatternDetectorService --> CupWithHandleResult : creates
-ChartPatternController ..> PatternResponse : returns
-ChartPatternController ..> ComplexPatternResponse : returns
+class FlagPatternService {
+    + findFlagPatterns(ohlcDataList, ...): List<FlagPattern>
+}
+
+class PennantService {
+    + findPennantPatterns(ohlcDataList, ...): List<PennantPattern>
+}
+
+class ChartPatternResult {
+    - stockSymbol: String
+    - analysisTime: Long
+    - flagPatterns: List<FlagPattern>
+    - doublePatterns: List<DoublePattern>
+    - headAndShouldersPatterns: List<HeadAndShouldersPattern>
+    - inverseHeadAndShouldersPatterns: List<InverseHeadAndShouldersPattern>
+    - pennantPatterns: List<PennantPattern>
+    - trianglePatterns: List<TrianglePattern>
+    - totalPatternsFound: int
+}
+
+class CupWithHandle {
+    - cupStart: int
+    - cupBottom: int
+    - cupEnd: int
+    - handleEnd: int
+    - breakoutPoint: int
+}
+
+ChartPatternDetectionService --> HeadAndShouldersService
+ChartPatternDetectionService --> DoublePatternService
+ChartPatternDetectionService --> TriangleService
+ChartPatternDetectionService --> FlagPatternService
+ChartPatternDetectionService --> PennantService
+ChartPatternDetectionService ..> ChartPatternResult : creates
+ComplexPatternDetectorService ..> CupWithHandle : returns
 
 @enduml
