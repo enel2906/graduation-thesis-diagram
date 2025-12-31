@@ -1,0 +1,102 @@
+@startuml advance-signal-sequence
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #000000
+skinparam ActorBackgroundColor #FFFFFF
+skinparam ActorBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam SequenceLifeLineBorderColor #000000
+
+title Sequence Diagram - Advance Signal Detection Flow\n(Combo Candlestick Pattern + Technical Indicator)
+
+actor "User" as user
+participant "React Client\n(StockChart)" as client
+participant "AdvanceSignalModal" as modal
+participant "AdvanceSignalService" as signalService
+participant "CandlePatternDetector" as patternDetector
+participant "TechnicalIndicators" as techService
+participant "ComboSignalDefinitions" as comboDef
+
+user -> client : Click "Advance Signal"
+activate client
+
+client -> modal : Open AdvanceSignalModal
+activate modal
+
+modal -> comboDef : getAllComboSignals()
+activate comboDef
+comboDef --> modal : List of combo signal definitions
+deactivate comboDef
+
+modal --> user : Display available combo signals\n(Hammer+RSI, Engulfing+MACD, etc.)
+
+user -> modal : Select combo signals\n& Click "Detect"
+
+modal -> signalService : detectComboSignal(candles, comboId)
+activate signalService
+
+signalService -> comboDef : getComboSignal(comboId)
+activate comboDef
+comboDef --> signalService : ComboDefinition\n{pattern, indicators, prediction}
+deactivate comboDef
+
+note right of signalService
+    Example: "hammer_rsi_oversold"
+    - Pattern: Hammer
+    - Indicator: RSI(14) < 30
+    - Prediction: Bullish, +3%, 7 days
+end note
+
+signalService -> patternDetector : detectPattern(patternName, candles)
+activate patternDetector
+patternDetector --> signalService : patternResults[]
+deactivate patternDetector
+
+loop For each detected pattern
+    signalService -> techService : getIndicatorValueAtIndex(type, candles, index)
+    activate techService
+    
+    alt RSI Indicator
+        techService -> techService : calculateRSI(candles, period)
+    else MACD Crossover
+        techService -> techService : calculateMACD(candles, fast, slow, signal)
+    else Bollinger Squeeze
+        techService -> techService : calculateBollingerBands(candles, period, stdDev)
+    else Volume Spike
+        techService -> techService : calculateVolumeSpike(candles, period)
+    end
+    
+    techService --> signalService : indicatorValue
+    deactivate techService
+    
+    signalService -> signalService : Check indicator condition\n(e.g., RSI < 30)
+    
+    alt Indicator condition satisfied
+        signalService -> techService : calculateATR(candles, 14)
+        activate techService
+        techService --> signalService : ATR value
+        deactivate techService
+        
+        signalService -> signalService : Calculate Stop/Target\n- Stop = Entry ± 1×ATR\n- Target = Entry ± 2×ATR
+        
+        signalService -> signalService : Add to validSignals[]
+    end
+end
+
+signalService --> modal : ComboSignalResult[]\n{signals, markers, stats}
+deactivate signalService
+
+modal -> client : Display backtest markers on chart
+client -> client : Render markers with\nStop/Target levels
+
+modal --> user : Show backtest statistics\n(Win Rate, Avg Gain, etc.)
+deactivate modal
+deactivate client
+
+@enduml

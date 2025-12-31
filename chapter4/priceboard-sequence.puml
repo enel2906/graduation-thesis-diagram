@@ -1,0 +1,124 @@
+@startuml priceboard-sequence
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #000000
+skinparam ActorBackgroundColor #FFFFFF
+skinparam ActorBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam SequenceLifeLineBorderColor #000000
+skinparam DatabaseBackgroundColor #FFFFFF
+skinparam DatabaseBorderColor #000000
+skinparam QueueBackgroundColor #FFFFFF
+skinparam QueueBorderColor #000000
+
+title Sequence Diagram - Price Board Real-time Update Flow
+
+actor "User" as user
+participant "React Client\n(WatchlistPage)" as client
+participant "WebSocket Server\n(STOMP/SockJS)" as wsServer
+participant "Alert Service\n(Spring Boot)" as alertService
+participant "PriceBoardListener" as listener
+queue "RabbitMQ" as rabbitmq
+participant "Data Service\n(FastAPI)" as dataService
+participant "vnstock API" as vnstock
+database "MongoDB" as db
+
+== Initial Page Load ==
+
+user -> client : Navigate to Price Board
+activate client
+
+client -> client : getPriceBoard() via REST API\n(initial data load)
+client -> dataService : GET /api/price-board
+activate dataService
+dataService -> db : Find all Vietnam stocks
+db --> dataService : Stock symbols list
+dataService -> vnstock : trading.price_board(symbols)
+vnstock --> dataService : Price board DataFrame
+dataService --> client : { data: [...], total, timestamp }
+deactivate dataService
+
+client -> client : Display price table
+
+== WebSocket Connection ==
+
+client -> wsServer : STOMP CONNECT\n/ws (SockJS)
+activate wsServer
+wsServer --> client : CONNECTED
+
+client -> wsServer : SUBSCRIBE\n/topic/price-board
+note right of client
+    Subscribed to real-time
+    price board updates
+end note
+
+deactivate wsServer
+
+== Background Task - Real-time Updates ==
+
+loop Every 1 second (during trading hours)
+    dataService -> vnstock : trading.price_board(symbols)
+    activate dataService
+    vnstock --> dataService : Price board DataFrame
+    
+    dataService -> rabbitmq : publish("stock.price.board.*",\nPriceBoardDTO)
+    note left of rabbitmq
+        Exchange: stock.price.board
+        Routing key: stock.price.board.update
+    end note
+    deactivate dataService
+    
+    rabbitmq -> listener : @RabbitListener\nreceivePriceBoardUpdate(dto)
+    activate listener
+    
+    listener -> wsServer : messagingTemplate.convertAndSend(\n"/topic/price-board", dto)
+    activate wsServer
+    
+    wsServer -> client : MESSAGE\n/topic/price-board\n{ data: [...], timestamp }
+    activate client
+    
+    client -> client : Update price table\n(setPriceData, setLastUpdate)
+    
+    note right of client
+        Real-time update:
+        - Match price
+        - Volume
+        - Change %
+        - Bid/Ask prices
+    end note
+    
+    deactivate client
+    deactivate wsServer
+    deactivate listener
+end
+
+== Fallback - Manual Refresh ==
+
+alt WebSocket disconnected
+    client -> client : Connection lost\n(setIsConnected=false)
+    
+    user -> client : Click Refresh button
+    activate client
+    
+    client -> dataService : GET /api/price-board
+    dataService --> client : { data: [...], timestamp }
+    
+    client -> client : Update price table
+    deactivate client
+end
+
+== Cleanup ==
+
+user -> client : Navigate away
+client -> wsServer : DISCONNECT
+wsServer --> client : DISCONNECTED
+
+deactivate client
+
+@enduml

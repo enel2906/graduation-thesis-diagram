@@ -1,10 +1,19 @@
 @startuml stock-listener-class
 
 !theme plain
+allowmixing
 skinparam backgroundColor #FFFFFF
 skinparam classAttributeIconSize 0
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #000000
+skinparam InterfaceBackgroundColor #FFFFFF
+skinparam InterfaceBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam QueueBackgroundColor #FFFFFF
+skinparam QueueBorderColor #000000
 
 title StockDataListener Class Diagram
 

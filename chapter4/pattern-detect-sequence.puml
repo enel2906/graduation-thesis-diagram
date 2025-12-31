@@ -5,58 +5,66 @@ skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
 skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #000000
+skinparam ActorBackgroundColor #FFFFFF
+skinparam ActorBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam SequenceLifeLineBorderColor #000000
 
-title Sequence Diagram - Pattern Detection Flow
+title Sequence Diagram - Pattern Detection Flow (Client-side)
 
 actor "User" as user
-participant "React Client" as client
-participant "ChartPatternController" as controller
-participant "DetectCandlePatternService" as service
-participant "CandleStickRepository" as repo
-database "MongoDB" as db
+participant "React Client\n(StockChart)" as client
+participant "PatternDetectionService\n(JavaScript)" as patternService
+participant "CandlePatternDetector" as detector
+participant "Alert Service\n(Fallback API)" as alertService
 
 user -> client : Select pattern "Hammer"
 activate client
 
-client -> controller : GET /api/chart-pattern/{symbol}\n?patterns=hammer
-activate controller
+client -> patternService : detectCandlePattern(candles, "hammer")
+activate patternService
 
-controller -> service : getHammerCandles(stockId)
-activate service
+patternService -> patternService : Check if pattern\nis supported locally
 
-service -> repo : findByStockId(stockId)
-activate repo
+alt Pattern supported (client-side detection)
+    patternService -> detector : detectHammer(candles)
+    activate detector
+    
+    note right of detector
+        For each candlestick:
+        1. Calculate body size
+        2. Calculate lower shadow
+        3. Calculate upper shadow
+        4. Check hammer criteria:
+           - Lower shadow >= 2x body
+           - Upper shadow <= 10% of range
+           - Body in upper third
+           - Downtrend before pattern
+    end note
+    
+    detector -> detector : filter candles matching\nHammer pattern criteria
+    
+    detector --> patternService : patterns[]
+    deactivate detector
+    
+else Pattern not supported locally (fallback to API)
+    patternService -> alertService : GET /alert/candle-stick/{symbol}\n?candlePattern=pattern_name
+    activate alertService
+    alertService --> patternService : PatternResponse
+    deactivate alertService
+end
 
-repo -> db : db.candlesticks.find({stock_id: stockId})
-activate db
-db --> repo : List<CandleStick>
-deactivate db
+patternService --> client : patterns[] (matched candles)
+deactivate patternService
 
-repo --> service : List<CandleStick>
-deactivate repo
+client -> client : Generate markers for\nmatched patterns
 
-note right of service
-    For each candlestick:
-    1. Calculate body size
-    2. Calculate lower shadow
-    3. Calculate upper shadow
-    4. Check hammer criteria:
-       - Lower shadow >= 2x body
-       - Upper shadow <= 10% of range
-       - Body in upper third
-end note
+client -> client : Add markers to chart\nusing lightweight-charts
 
-service -> service : filter candles matching\nHammer pattern criteria
-
-service --> controller : List<CandleStick> (matching candles)
-deactivate service
-
-controller --> client : PatternResponse\n{symbol, patterns: {hammer: [...]}}
-deactivate controller
-
-client -> client : Render markers on chart\nfor matched candles
-
-client --> user : Display chart with\nHammer patterns highlighted
+client --> user : Display chart with\npattern markers highlighted
 deactivate client
 
 @enduml

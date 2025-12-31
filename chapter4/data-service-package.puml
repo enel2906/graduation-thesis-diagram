@@ -5,12 +5,18 @@ skinparam backgroundColor #FFFFFF
 skinparam packageStyle rectangle
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #000000
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
 
 title Data Service Package Design (Python FastAPI)
 
 package "data-service" {
     
-    package "API Endpoints" #LightBlue {
+    package "API Endpoints" #FFFFFF {
         class "/api/candlesticks" as candleApi {
             GET /{symbol}
             GET /{symbol}/range
@@ -43,7 +49,7 @@ package "data-service" {
         }
     }
     
-    package "Data Fetcher" #LightGreen {
+    package "Data Fetcher" #FFFFFF {
         class "VnstockFetcher" as vnFetcher {
             + fetch_stock_list()
             + fetch_candlesticks()
@@ -57,7 +63,7 @@ package "data-service" {
         }
     }
     
-    package "Background Tasks" #LightYellow {
+    package "Background Tasks" #FFFFFF {
         class "StockUpdater" as updater {
             + update_all_stocks()
             + backfill_historical()
@@ -65,7 +71,7 @@ package "data-service" {
         }
     }
     
-    package "RabbitMQ Integration" #LightCoral {
+    package "RabbitMQ Integration" #FFFFFF {
         class "RabbitMQPublisher" as publisher {
             + init_rabbitmq()
             + publish_stock_update()
@@ -73,7 +79,7 @@ package "data-service" {
         }
     }
     
-    package "MongoDB Repository" #LightGray {
+    package "MongoDB Repository" #FFFFFF {
         class "StocksCollection" as stocksCol {
             + find_all()
             + find_by_symbol()

@@ -5,6 +5,12 @@ skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Arial
 skinparam defaultFontSize 10
 skinparam classFontStyle bold
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #000000
 
 title MongoDB Database Schema
 
@@ -59,22 +65,6 @@ package "candlestick_db" {
         - email_1 (unique)
     }
     
-    class "alert_settings" <<collection>> {
-        _id: ObjectId
-        --
-        user_id: ObjectId [ref: users._id]
-        name: String
-        pattern_types: Array<String>
-        symbols: Array<String>
-        enabled: Boolean
-        notify_methods: Array<String>
-        created_at: ISODate
-        updated_at: ISODate
-        --
-        <&star> Indexes:
-        - user_id_1
-    }
-    
     class "refresh_tokens" <<collection>> {
         _id: ObjectId
         --
@@ -90,7 +80,6 @@ package "candlestick_db" {
 }
 
 stocks "1" -- "*" candlesticks : stock_id
-users "1" -- "*" alert_settings : user_id
 users "1" -- "*" refresh_tokens : user_id
 
 note bottom of candlesticks

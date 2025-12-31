@@ -4,6 +4,10 @@
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
+skinparam EntityBackgroundColor #FFFFFF
+skinparam EntityBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
 
 title Entity Relationship Diagram
 
@@ -45,18 +49,7 @@ entity "User" as user {
     updated_at : DateTime
 }
 
-entity "AlertSetting" as alertSetting {
-    * _id : ObjectId <<PK>>
-    --
-    * user_id : ObjectId <<FK>>
-    * pattern_type : String
-    * symbols : Array<String>
-    * enabled : Boolean
-    created_at : DateTime
-}
-
 stock ||--o{ candlestick : "has many"
-user ||--o{ alertSetting : "has many"
 
 note right of stock
     exchange values:
