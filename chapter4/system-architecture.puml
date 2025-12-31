@@ -15,7 +15,7 @@ cloud "External Data Sources" {
 }
 
 ' Client Layer
-rectangle "Client Layer" #LightBlue {
+rectangle "Client Layer" #White {
     [React Client\n(SPA)] as client
     note right of client
         - lightweight-charts
@@ -25,14 +25,14 @@ rectangle "Client Layer" #LightBlue {
 }
 
 ' Service Layer
-rectangle "Service Layer" #LightGreen {
-    rectangle "Data Service" #PaleGreen {
+rectangle "Service Layer" #White {
+    rectangle "Data Service" #White {
         [FastAPI\nREST API] as dataApi
         [Data Fetcher] as fetcher
         [RabbitMQ Publisher] as publisher
     }
     
-    rectangle "Alert Service" #PaleGreen {
+    rectangle "Alert Service" #White {
         [Spring Boot\nREST API] as alertApi
         [Pattern Detector] as detector
         [RabbitMQ Listener] as listener
@@ -41,12 +41,12 @@ rectangle "Service Layer" #LightGreen {
 }
 
 ' Message Broker
-rectangle "Message Broker" #LightYellow {
+rectangle "Message Broker" #White {
     queue "RabbitMQ\nstock.market.data" as rabbitmq
 }
 
 ' Database Layer
-rectangle "Database Layer" #LightCoral {
+rectangle "Database Layer" #White {
     database "MongoDB\ncandlestick_db" as mongodb
 }
 

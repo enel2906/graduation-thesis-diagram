@@ -5,10 +5,24 @@ skinparam backgroundColor #FFFFFF
 skinparam componentStyle rectangle
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
+skinparam RectangleBackgroundColor #FFFFFF
+skinparam RectangleBorderColor #000000
+skinparam ComponentBackgroundColor #FFFFFF
+skinparam ComponentBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam CloudBackgroundColor #FFFFFF
+skinparam CloudBorderColor #000000
+skinparam DatabaseBackgroundColor #FFFFFF
+skinparam DatabaseBorderColor #000000
+skinparam QueueBackgroundColor #FFFFFF
+skinparam QueueBorderColor #000000
+skinparam ActorBackgroundColor #FFFFFF
+skinparam ActorBorderColor #000000
 
 title Alert Service Overall Design
 
-rectangle "Alert Service (Spring Boot 3.3)" #LightGoldenRodYellow {
+rectangle "Alert Service (Spring Boot 3.3)" #FFFFFF {
     
     rectangle "Controller Layer" {
         [AuthController] as authCtrl

@@ -5,12 +5,20 @@ skinparam backgroundColor #FFFFFF
 skinparam packageStyle rectangle
 skinparam defaultFontName Arial
 skinparam defaultFontSize 10
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #000000
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #000000
+skinparam InterfaceBackgroundColor #FFFFFF
+skinparam InterfaceBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
 
 title Alert Service Package Design (Spring Boot)
 
 package "com.example.alert" {
     
-    package "controller" #LightBlue {
+    package "controller" #FFFFFF {
         class AuthController {
             + login()
             + register()
@@ -39,7 +47,7 @@ package "com.example.alert" {
         }
     }
     
-    package "service" #LightGreen {
+    package "service" #FFFFFF {
         interface DetectCandlePatternService {
             + getHammerCandles()
             + getBullishEngulfingPatterns()
@@ -68,9 +76,14 @@ package "com.example.alert" {
         class StockDataListener {
             + handleStockUpdate()
         }
+        
+        class PriceBoardListener {
+            + receivePriceBoardUpdate()
+            - messagingTemplate
+        }
     }
     
-    package "repository" #LightYellow {
+    package "repository" #FFFFFF {
         interface CandleStickRepository {
             + findByStockId()
             + findByDateRange()
@@ -87,7 +100,7 @@ package "com.example.alert" {
         }
     }
     
-    package "domain" #LightCoral {
+    package "domain" #FFFFFF {
         class CandleStick {
             - id: String
             - stockId: String
@@ -115,19 +128,33 @@ package "com.example.alert" {
         }
     }
     
-    package "config" #LightGray {
+    package "config" #FFFFFF {
         class RabbitMQConfig
         class WebSocketConfig
         class SecurityConfig
     }
     
-    package "security" #Pink {
+    package "dto" #FFFFFF {
+        class PriceBoardDTO {
+            - data: List<PriceBoardItem>
+            - total: Integer
+            - timestamp: Long
+        }
+        
+        class StockUpdateDTO {
+            - symbol: String
+            - open, high, low, close: Double
+            - volume: Long
+        }
+    }
+    
+    package "security" #FFFFFF {
         class JwtTokenProvider
         class JwtAuthenticationFilter
         class CustomOAuth2UserService
     }
     
-    package "dto" #Wheat {
+    package "dto" #FFFFFF {
         class LoginRequest
         class LoginResponse
         class PatternResponse

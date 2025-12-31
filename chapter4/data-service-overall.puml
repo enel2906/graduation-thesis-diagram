@@ -5,10 +5,22 @@ skinparam backgroundColor #FFFFFF
 skinparam componentStyle rectangle
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
+skinparam RectangleBackgroundColor #FFFFFF
+skinparam RectangleBorderColor #000000
+skinparam ComponentBackgroundColor #FFFFFF
+skinparam ComponentBorderColor #000000
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #000000
+skinparam CloudBackgroundColor #FFFFFF
+skinparam CloudBorderColor #000000
+skinparam DatabaseBackgroundColor #FFFFFF
+skinparam DatabaseBorderColor #000000
+skinparam QueueBackgroundColor #FFFFFF
+skinparam QueueBorderColor #000000
 
 title Data Service Overall Design
 
-rectangle "Data Service (Python FastAPI)" #LightGreen {
+rectangle "Data Service (Python FastAPI)" #FFFFFF {
     
     rectangle "API Layer" {
         [REST API Endpoints] as api
@@ -64,11 +76,5 @@ yfinanceClient --> yfinanceApi
 
 repo --> mongodb
 publisher --> rabbitmq
-
-note bottom of tasks
-    Runs every 15 minutes
-    during trading hours
-    (9:00 - 15:00)
-end note
 
 @enduml
